@@ -147,20 +147,27 @@ class HamsterPyQt(QObject):
         if not fact.start:
             # No start time for the fact, set to now 
             fact.start = datetime.datetime.now()
+        # Clean up the fact start as per the hamster-QML interface.
         fact.start = self._cleanStart(fact.start)
         # Save the fact. If the fact does not have an end time it will be set as the 
         # current fact.
+
+        # At this point first check if there is not alreay a fact ongoing,
+        # if there it, it must be stopped with the stop time set to before
+        # the stop time of the ongoing fact.
+        self.stop(fact.start, True)
+
         try: 
             fact = self._control.facts.save(fact)
         except ValueError as err:
-            self.errorMessage.emit("Fact error: {0}".format(err))
+            self.errorMessage.emit("Fact start error: {0}".format(err))
         else:
             self.startSuccessful.emit()
-        # Check if the started fact has a end time. If it does have one, a
-        # start and end time was specified and the fact was added to the
-        # database. If it does not have a end it is an ongoing fact.
-        if fact.end:
-            self.factAdded.emit(FactPyQt(fact))
+            # Check if the started fact has a end time. If it does have one, a
+            # start and end time was specified and the fact was added to the
+            # database. If it does not have a end it is an ongoing fact.
+            if fact.end:
+                self.factAdded.emit(FactPyQt(fact))
         self.current()
 
 
@@ -185,17 +192,25 @@ class HamsterPyQt(QObject):
 
 
     @pyqtSlot()
-    def stop(self, end_time = ''):
-        """ Stop a fact """
+    def stop(self, endTime = None, ignoreError=False):
+        """ Stop an ongoing fact """
         try: 
             fact = self._control.facts.stop_tmp_fact()
         except ValueError as err:
-            self.errorMessage.emit("Fact error: {0}".format(err))
-        else:
-            fact.end = self._cleanEnd(fact.end)
-            self._control.facts.save(fact)
-            self.stopSuccessful.emit()
-            self.factAdded.emit(FactPyQt(fact))
+            if ignoreError == False:
+                self.errorMessage.emit("Fact stop error: {0}".format(err))
+            self.current()
+            return
+        # If the end time is supplied, update the end time to the
+        # supplied time instead of using the end time obtained from
+        # the fact stop.
+        if endTime:
+            fact.end = endTime
+        # Make the end time clean according what is required for this app.
+        fact.end = self._cleanEnd(fact.end)
+        self._control.facts.save(fact)
+        self.stopSuccessful.emit()
+        self.factAdded.emit(FactPyQt(fact))
         self.current()
 
     @pyqtSlot()
@@ -235,8 +250,8 @@ class HamsterPyQt(QObject):
         cat = None
         if category:
             cat = Category(category)
-        fact.start       = startTime.toPyDateTime()
-        fact.end         = endTime.toPyDateTime()
+        fact.start       = self._cleanStart(startTime.toPyDateTime())
+        fact.end         = self._cleanEnd(endTime.toPyDateTime())
         fact.activity    = Activity(activity, category=cat)
         fact.description = description
         # Save the updated fact
