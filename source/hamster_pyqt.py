@@ -208,7 +208,13 @@ class HamsterPyQt(QObject):
             fact.end = endTime
         # Make the end time clean according what is required for this app.
         fact.end = self._cleanEnd(fact.end)
-        self._control.facts.save(fact)
+        try:
+            self._control.facts.save(fact)
+        except:
+            self.errorMessage.emit("Fact stop error: {0}".format(err))
+            self.current()
+            return
+        # At this point adding the fact should have been successful.
         self.stopSuccessful.emit()
         self.factAdded.emit(FactPyQt(fact))
         self.current()
