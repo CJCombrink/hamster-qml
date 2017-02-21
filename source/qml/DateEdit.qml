@@ -28,6 +28,7 @@ Item {
     width: tf.width + b.width
     height: tf.height
 
+    signal dateSelected(date selectedDate)
     property date currentDate: new Date()
     property bool busyEditing: false
         
@@ -35,8 +36,58 @@ Item {
         id: tf
         width: 80
         placeholderText: "DD/MM/YYYY"
-        validator: RegExpValidator { regExp: /^(0[1-9]|[12]\d|3[01])\/(0[1-9]|1[0-2])\/(20)\d{2}$/ }
-        inputMethodHints: Qt.ImhDate
+        validator: RegExpValidator { regExp: /^(?:0[1-9]|[12]\d|3[01])\/(?:0[1-9]|1[0-2])\/(?:20)\d{2}$/ }
+//        inputMethodHints: Qt.ImhDate <- Does not seem to do anything
+
+        onAccepted: {
+            // Slot called when the text is accepted. This will only be called
+            // if the text has the correct format from the validator.
+            // When accepted, take the text and update the dateTime property
+            // on this item.
+            var updatedDateTime = Date.fromLocaleDateString(Qt.locale(), tf.text, 'dd/MM/yyyy')
+            currentDate = updatedDateTime
+        }
+
+        Keys.onPressed: {
+            if(event.key === Qt.Key_Escape) {
+                // Reset and set the time again so that the changed() slot
+                // can get called to reset the color and update all needed
+                // status properties.
+                formatDate();
+                event.accepted = true;
+            } else if(event.key === Qt.Key_Up) {
+                addDaysToDate(1)
+                event.accepted = true;
+            } else if(event.key === Qt.Key_Down) {
+                addDaysToDate(-1)
+                event.accepted = true;
+            } else if(event.key === Qt.Key_PageUp) {
+                addDaysToDate(10)
+                event.accepted = true;
+            } else if(event.key === Qt.Key_PageDown) {
+                addDaysToDate(-10)
+                event.accepted = true;
+            }
+        }
+
+        // Update the color of the text when the text changes. If the text is
+        // valid the color is set to blue to indicate that the text was not
+        // applied and does not correspond to the current date set on the item.
+        // If the text is not yet a valid time, then the text color will be
+        // red.
+        onTextChanged: {
+            color = acceptableInput? 'blue' : 'red'
+            busyEditing = true
+        }
+
+        // Function to add the supplied number of minutes to the current time.
+        // The time can be positive or negative. The Date type handles wrapping
+        // automatically so there is no need to handle this.
+        function addDaysToDate(daysToAdd) {
+            var updatedDateTime = new Date( currentDate )
+            updatedDateTime.setDate( Number(Qt.formatDate(currentDate, "dd")) + daysToAdd )
+            currentDate = updatedDateTime
+        }
     }
 
     Button {
@@ -83,6 +134,7 @@ Item {
 
     function updateDate(newDate) {
         currentDate = newDate
+        topItem.dateSelected(currentDate)
     }
 
     function formatDate() {
@@ -91,6 +143,8 @@ Item {
 
     onCurrentDateChanged : {
         formatDate()
+        tf.color    = 'black'
+        busyEditing = false;
     }
     Component.onCompleted: formatDate()
 }

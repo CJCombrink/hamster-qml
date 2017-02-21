@@ -52,6 +52,7 @@ Item {
     
     property date dateTime
     property bool busyEditing: false
+    property alias text: tf.text
         
     TextField {
         id: tf
@@ -62,7 +63,7 @@ Item {
         //inputMethodHints: Qt.ImhNoPredictiveText
         
         // Slot called when the text is accepted. This will only be called
-        // if the text has the correct format from the validator. 
+        // if the text has the correct format from the validator.
         // When accepted, take the text and update the dateTime property
         // on this item.
         onAccepted: {

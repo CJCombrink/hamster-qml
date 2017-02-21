@@ -92,7 +92,7 @@ Item {
                         currentDate: new Date()
 
                         Component.onCompleted: {
-                            timeEditNewFact.onCurrentDateChanged.connect(showCreationDialog)
+                            timeEditNewFact.onDateSelected.connect(showCreationDialog)
                         }
 
                         function showCreationDialog() {
@@ -100,6 +100,7 @@ Item {
                             if (editWidgetComponent.status === Component.Ready) {
                                 var dialog = editWidgetComponent.createObject(parent,{start: currentDate, end: currentDate});
                                 dialog.accepted.connect(dialogAccepted)
+                                dialog.clearAll();
                                 dialog.show()
                             } else {
                                 console.log('Component is not ready: ', component.errorString())

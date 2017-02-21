@@ -44,6 +44,11 @@ Window {
     
     signal accepted(int key, date start, date end, string category, string activity, string description)
 
+    function clearAll() {
+        timeEditStart.text = ""
+        timeEditEnd.text = ""
+    }
+
     ColumnLayout {
         id: mainLayout
         anchors.fill   : parent
