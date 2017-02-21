@@ -19,7 +19,7 @@
 ############################################################################
 
 import sys
-from PyQt5.QtCore import Qt, QObject, QSortFilterProxyModel, QDate, QModelIndex, QVariant
+from PyQt5.QtCore import Qt, QObject, QSortFilterProxyModel, QDate, QModelIndex, QVariant, QAbstractItemModel
 from PyQt5.QtCore import pyqtProperty, pyqtSignal, pyqtSlot
 
 class SortFilterModelPyQt(QSortFilterProxyModel):
@@ -40,6 +40,14 @@ class SortFilterModelPyQt(QSortFilterProxyModel):
         self.startDateChanged.connect(self.invalidateFilter)
         self.endDateChanged.connect(self.invalidateFilter)
         self.sourceModelChanged.connect(self._updateDateRoles)
+
+    @pyqtProperty(QAbstractItemModel)
+    def sourceModel(self):
+        return super(SortFilterModelPyQt, self).sourceModel()
+
+    @sourceModel.setter
+    def sourceModel(self, model):
+        super(SortFilterModelPyQt, self).setSourceModel(model)
 
     @pyqtProperty(QDate, notify=startDateChanged)
     def startDate(self):
@@ -63,10 +71,10 @@ class SortFilterModelPyQt(QSortFilterProxyModel):
 
     @pyqtSlot(int, QModelIndex, result=bool)
     def filterAcceptsRow(self, row, parentIndex):
-        index = self.sourceModel().index(row, 0, parentIndex)
+        index = self.sourceModel.index(row, 0, parentIndex)
         if not index.isValid():
             return False
-        day = self.sourceModel().data(index, self._dayRole)
+        day = self.sourceModel.data(index, self._dayRole)
         if self._startDate == self._endDate:
             return (day == self._startDate)
         # Check if the day is in between the start and end.
@@ -74,6 +82,7 @@ class SortFilterModelPyQt(QSortFilterProxyModel):
             return True
         return False
 
+    @pyqtSlot()
     def _updateDateRoles(self):
         dictionary  = dict(self.roleNames())
         for role, name in dictionary.items():
@@ -97,8 +106,8 @@ class SortFilterModelPyQt(QSortFilterProxyModel):
 
     @pyqtSlot(QModelIndex, QModelIndex, result=bool)
     def lessThan(self, left, right):
-        leftStart  = self.sourceModel().data(left, self._startRole)
-        rightStart = self.sourceModel().data(right, self._startRole)
+        leftStart  = self.sourceModel.data(left, self._startRole)
+        rightStart = self.sourceModel.data(right, self._startRole)
         return (leftStart < rightStart)
 
 
