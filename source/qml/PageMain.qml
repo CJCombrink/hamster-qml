@@ -45,14 +45,14 @@ Item {
 
         GroupBox {
             id: groupBoxCurrent
-            title: "Current"
+            title: "Current work"
             Layout.fillWidth: true
             RowLayout {
                 id: currentRowLayout
                 anchors.fill: parent
                 TextField {
                     id: textFieldCurrent
-                    placeholderText: "Current activity"
+                    placeholderText: "<no work in progress>"
                     readOnly: true
                     Layout.fillWidth: true
                 }
@@ -78,7 +78,7 @@ Item {
 
         GroupBox {
             id: rowBox
-            title: "Activities"
+            title: "Log work"
             Layout.fillWidth: true
             
             ColumnLayout {
@@ -88,7 +88,7 @@ Item {
                     anchors.fill: parent
                     TextField {
                         id: textFieldNew
-                        placeholderText: "New Activity"
+                        placeholderText: "<time> [activity]@<category>, description"
                         validator: RegExpValidator { regExp: /^((((([01]\d|2[0-3]):)([0-5]\d) )(- ((([01]\d|2[0-3]):)([0-5]\d)) )?)|(-\d+) )?\w+(@\w+(, .+)?)?$/ }
                         Layout.fillWidth: true
                         focus: true
