@@ -95,6 +95,7 @@ Item {
                 locale       : monthGrid.locale
                 Layout.row   : 0
                 Layout.column: 1
+                Layout.fillWidth : true
             }
 
             WeekNumberColumn {
@@ -103,6 +104,7 @@ Item {
                 locale: monthGrid.locale
                 Layout.row   : 1
                 Layout.column: 0
+                Layout.fillHeight: true
             }
 
             MonthGrid {
