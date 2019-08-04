@@ -216,7 +216,7 @@ class HamsterPyQt(QObject):
         fact.end = self._cleanEnd(fact.end)
         try:
             self._control.facts.save(fact)
-        except:
+        except ValueError as err:
             self.errorMessage.emit("Fact stop error: {0}".format(err))
             self.current()
             return
