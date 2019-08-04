@@ -32,8 +32,6 @@ ApplicationWindow {
     minimumWidth: 470
     height: 500
 
-    property int margin: 11
-
     Component.onCompleted: {
         visible = true;
         textHeader.text = textHeader.text + " (0.4)"
@@ -42,7 +40,6 @@ ApplicationWindow {
     ColumnLayout {
         id: mainLayout
         anchors.fill: parent
-        anchors.margins: margin
 
         Label {
             id: textHeader
