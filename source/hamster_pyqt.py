@@ -27,6 +27,13 @@ import hamster_lib
 from hamster_lib import Fact, HamsterControl, reports, Category, Activity
 from hamster_lib.helpers import time as time_helpers
 
+# The start time has the following offset in seconds applied when started.
+# This overcomes the issue where facts are started without specifying
+# a time that conflicts with one that was stopped by specifying a time.
+# Sometimes there were a small overlap in seconds and the backend did
+# not like this. This should ensure that this does not happen.
+FACT_START_OFFSET = 10 # seconds
+
 class FactPyQt(QObject):
     """ QObject wrapper for a fact """
     def __init__(self, fact):
@@ -62,7 +69,7 @@ class FactPyQt(QObject):
 
     @pyqtSlot(result='QTime')
     def duration(self):
-        return QTime(0, 0, 0).addSecs(self.start().secsTo(self.end()))
+        return QTime(0, 0, FACT_START_OFFSET).addSecs(self.start().secsTo(self.end()))
 
     @pyqtSlot(result='QDate')
     def day(self):
@@ -113,7 +120,7 @@ class HamsterPyQt(QObject):
         # a time that conflicts with one that was stopped by specifying a time.
         # Sometimes there were a small overlap in seconds and the backend did
         # not like this. This should ensure that this does not happen.
-        return start.replace(second=10, microsecond=0)
+        return start.replace(second=FACT_START_OFFSET, microsecond=0)
 
     def _cleanEnd(self, end):
         # Update the stop time of the fact to always be on the minute.

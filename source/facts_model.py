@@ -20,6 +20,7 @@
 
 import sys
 from PyQt5.QtCore import Qt, QObject, pyqtProperty, pyqtSignal, pyqtSlot, QAbstractTableModel, QModelIndex, QByteArray, QVariant
+from PyQt5.QtCore import QTime, QDate
 
 from hamster_lib import Fact
 
@@ -28,15 +29,15 @@ from hamster_pyqt import FactPyQt
 
 class FactModelPyQt(QAbstractTableModel):
     """ Fact Model """
-    COLUMNS = ('key'        , 
-               'start'      , 
-               'end'        , 
-               'activity'   , 
-               'category'   , 
-               'description', 
+    COLUMNS = ('key'        ,
+               'start'      ,
+               'end'        ,
+               'activity'   ,
+               'category'   ,
+               'description',
                'duration'   ,
                'day'        )
- 
+
     def __init__(self, hamster):
         super(FactModelPyQt, self).__init__()
         self._hamster      = hamster
@@ -51,7 +52,7 @@ class FactModelPyQt(QAbstractTableModel):
         self._rDescription = roleIndexes; roleIndexes += 1
         self._rDuration    = roleIndexes; roleIndexes += 1
         self._rDay         = roleIndexes; roleIndexes += 1
-        # Reset the index to reuse 
+        # Reset the index to reuse
         roleIndexes      = 0
         self._roles[self._rKey        ] = QByteArray().append(FactModelPyQt.COLUMNS[roleIndexes]); roleIndexes += 1
         self._roles[self._rStart      ] = QByteArray().append(FactModelPyQt.COLUMNS[roleIndexes]); roleIndexes += 1
@@ -61,39 +62,39 @@ class FactModelPyQt(QAbstractTableModel):
         self._roles[self._rDescription] = QByteArray().append(FactModelPyQt.COLUMNS[roleIndexes]); roleIndexes += 1
         self._roles[self._rDuration   ] = QByteArray().append(FactModelPyQt.COLUMNS[roleIndexes]); roleIndexes += 1
         self._roles[self._rDay        ] = QByteArray().append(FactModelPyQt.COLUMNS[roleIndexes]); roleIndexes += 1
-        
+
         self.refreshFacts()
         self._hamster.factUpdated.connect(self.updateFact)
         self._hamster.factAdded.connect(self.addFact)
-        
+
     @pyqtSlot()
     def refreshFacts(self):
         self.beginResetModel()
         self._facts = self._hamster.list();
         self.endResetModel()
-        
+
     @pyqtSlot(FactPyQt)
     def updateFact(self, updatedFact):
         index = len(self._facts)
         for fact in reversed(self._facts):
             index -= 1
-            if fact.key() == updatedFact.key(): 
+            if fact.key() == updatedFact.key():
                 self._facts[index] = updatedFact
                 self.dataChanged.emit(self.index(index, 0), self.index(index, self.columnCount() - 1), )
                 return
-         
+
     @pyqtSlot(FactPyQt)
     def addFact(self, fact):
         self.beginInsertRows(QModelIndex(), self.rowCount(), self.rowCount() + 1)
         self._facts.append(fact)
         self.endInsertRows()
 
-    def rowCount(self, parent=QModelIndex()): 
-        return len(self._facts) 
-        
-    def columnCount(self, parent=QModelIndex()): 
+    def rowCount(self, parent=QModelIndex()):
+        return len(self._facts)
+
+    def columnCount(self, parent=QModelIndex()):
         return len(FactModelPyQt.COLUMNS)
-        
+
     def data(self, index, role):
         if not index.isValid():
             return None
@@ -106,10 +107,27 @@ class FactModelPyQt(QAbstractTableModel):
         elif role == self._rDuration    : return self._facts[index.row()].duration()
         elif role == self._rDay         : return self._facts[index.row()].day()
         else: return None
-        
+
     def roleNames(self):
         return self._roles
-        
+
+    @pyqtSlot(QDate, result='QVariant')
+    def getDayTotal(self, day):
+        """ Get the total time for the specified day.
+
+        This function will not be very effective on a large model.
+        Perhaps the model can store the data sorted according to the day,
+        then at least the calculation will be quicker if the day can be
+        retrieved.
+        """
+        duration = QTime(0, 0, 0)
+        for fact in self._facts:
+            if(fact.day() == day):
+                factDur = fact.duration()
+                duration = duration.addSecs( ( factDur.hour() * 60 * 60 ) + ( factDur.minute() * 60 ) + factDur.second() )
+
+        return duration;
+
     @pyqtSlot(int, result='QVariant')
     def get(self, row):
         headers = {}

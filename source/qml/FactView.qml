@@ -19,16 +19,16 @@
 ****************************************************************************/
 
 import QtQuick 2.13
-import QtQuick.Controls 1.5
+import QtQuick.Controls 1.4
+import QtQuick.Layouts 1.12
 
 Item {
   id: root
-  property var model
+  property alias model: factView.model
 
     TableView {
         id: factView
         anchors.fill: parent
-        model: root.model
 
         /* Key column should not be displayed. The code is left here for
          * debugging if needed. */
@@ -89,10 +89,23 @@ Item {
                 height: childrenRect.height
                 color : "lightsteelblue"
 
-                Text {
-                    text          : Qt.formatDate(section, "d MMMM yyyy (dddd)")
-                    font.bold     : true
-                    font.pixelSize: 20
+                RowLayout {
+                  anchors.left: parent.left
+                  anchors.right: parent.right
+
+                  Text {
+                      id: textDate
+                      text          : Qt.formatDate(section, "d MMMM yyyy (dddd)")
+                      font.bold     : true
+                      font.pixelSize: 20
+                  }
+
+                  Text {
+                    text: "(" + Qt.formatTime( py.fact_model.getDayTotal( section ), "hh:mm") + ")"
+                    font: textDate.font
+                    horizontalAlignment: Text.AlignRight
+                    Layout.fillWidth: true
+                  }
                 }
             }
         }
