@@ -4,16 +4,16 @@
 **
 ** This file is part of the Hamster QML GUI, a QML GUI for the hamster-lib.
 **
-** The Hamster QML GUI is free software: you can redistribute it and/or 
-** modify it under the terms of the GNU Lesser General Public License as 
-** published by the Free Software Foundation, either version 3 of the 
+** The Hamster QML GUI is free software: you can redistribute it and/or
+** modify it under the terms of the GNU Lesser General Public License as
+** published by the Free Software Foundation, either version 3 of the
 ** License, or (at your option) any later version.
-** 
+**
 ** The Hamster QML GUI is distributed in the hope that it will be useful,
 ** but WITHOUT ANY WARRANTY; without even the implied warranty of
 ** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ** GNU Lesser General Public License for more details.
-** 
+**
 ** You should have received a copy of the GNU Lesser General Public License
 ** along with the Hamster QML GUI. If not, see <http://www.gnu.org/licenses/>.
 ****************************************************************************/
@@ -21,7 +21,7 @@
 import QtQuick 2.8
 import QtQuick.Controls 2.1
 import QtQuick.Layouts 1.3
-import QtQuick.Window 2.2  
+import QtQuick.Window 2.2
 
 Window {
     id: mypopDialog
@@ -41,7 +41,7 @@ Window {
     property string description
 
     property int margin: 10
-    
+
     signal accepted(int key, date start, date end, string category, string activity, string description)
 
     function clearAll() {
@@ -94,6 +94,7 @@ Window {
                     TextField {
                         id: textFieldActivity
                         text: activity
+                        selectByMouse: true
                     }
                 }
                 ColumnLayout {
@@ -103,6 +104,7 @@ Window {
                     TextField {
                         id: textFieldCategory
                         text: category? category : ""
+                        selectByMouse: true
                     }
                 }
                 ColumnLayout {
@@ -115,6 +117,7 @@ Window {
                         id: textFieldDescription
                         text: description? description : ""
                         Layout.fillWidth: true
+                        selectByMouse: true
                     }
                 }
                 ColumnLayout {
@@ -127,14 +130,14 @@ Window {
                         readOnly: true
                         width   : 30
                     }
-                    
+
                     Component.onCompleted: {
                         timeEditStart.onDateTimeChanged.connect(updateDuration)
                         timeEditEnd.onDateTimeChanged.connect(updateDuration)
                         updateDuration()
                     }
-                    
-                    function updateDuration() { 
+
+                    function updateDuration() {
                         var duration = new Date(0, 0, 0)
                         duration.setMilliseconds((timeEditEnd.dateTime - timeEditStart.dateTime))
                         textFieldDuration.text = Qt.formatTime(duration, "hh:mm")
@@ -150,7 +153,7 @@ Window {
                 id: buttonsRowLayout
                 //anchors.fill: parent
                 Button {
-                    text: "Ok" 
+                    text: "Ok"
                     enabled: (timeEditStart.busyEditing == false) && (timeEditEnd.busyEditing == false) && (textFieldActivity.text != "")
                     onClicked: {
                         mypopDialog.accepted(key
@@ -162,14 +165,14 @@ Window {
                         mypopDialog.close();
                     }
                 }
-                
+
                 Button {
-                    text: "Cancel" 
+                    text: "Cancel"
                     onClicked: {
                         mypopDialog.close();
                     }
-                }   
-                
+                }
+
                 Rectangle {
                     Layout.fillWidth: true
                 }

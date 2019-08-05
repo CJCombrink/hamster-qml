@@ -55,6 +55,7 @@ Item {
                 TextField {
                     id: textFieldCurrent
                     placeholderText: "<no work in progress>"
+                    selectByMouse: true
                     readOnly: true
                     Layout.fillWidth: true
                 }
@@ -93,6 +94,7 @@ Item {
                     validator: RegExpValidator { }
                     Layout.fillWidth: true
                     focus: true
+                    selectByMouse: true
                     Keys.onPressed: {
                         if ((event.key == Qt.Key_Enter) || (event.key == Qt.Key_Return) ){
                             buttonStart.clicked()
