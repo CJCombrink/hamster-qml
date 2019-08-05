@@ -1,5 +1,4 @@
 # hamster-qml
-=============
 QML GUI frontend for the [hamster-lib](https://github.com/projecthamster/hamster-lib) timetracking backend.
 
 This GUI front-end is the result of not finding a suitable replacement for the [Project Hamster](https://projecthamster.wordpress.com/about/) application on Windows.
@@ -23,18 +22,18 @@ Although all development and testing is done in Windows, there is no reason why 
 The following steps can be used to run the GUI:
 
 1. Install Python 3.6.
-  * When installing on Windows, make sure Python is installed in a place where there is no spaces in the path.
-    For example, `C:\Progam Files\` should not be used. This is to prevent issues with Python in future.
-  * Development was done on the 32-bit version of Python.
+    * When installing on Windows, make sure Python is installed in a place where there is no spaces in the path.
+      For example, `C:\Progam Files\` should not be used. This is to prevent issues with Python in future.
+    * Development was done on the 32-bit version of Python.
 1. Install the hamster-lib inside Python.
-  * `pip install hamster-lib`
-  * Version 0.12 was latest and used for the development.
+    * `pip install hamster-lib`
+    * Version 0.12 was latest and used for the development.
 1. Install PyQt 5.
-  * `pip install PyQt5`
+    * `pip install PyQt5`
 1. Get the hamster-QML sources
-  * Download or check out the sources from this project page.
+    * Download or check out the sources from this project page.
 1. Run the application.
-  * From the source folder: `python hamster-qml.py`
+    * From the source folder: `python hamster-qml.py`
 
 Using the application
 =====================
@@ -43,8 +42,8 @@ Terms
 -----
 The following terms are used in the application, they originate from the terms used by the hamster-lib.
 
-| Term        | Description |
-|-------------|-------------|
+| Term             | Description |
+|------------------|-------------|
 | **Fact**         | Event or work that is getting done. It has a start and end time, a category, activity and description. |
 | **Category**     | Category is the high level grouping that the work belongs to. For example this project, `hamster-qml` can be one. |
 | **Activity**     | Activity is like a subtask of the category, like `develop` or `test` |
@@ -57,19 +56,19 @@ To log work, or a new fact, the activity must be entered in the 'Log work' edit 
 
 ```<time> [activity]@<category>, description```
 
-| Tag | Required | Comment |
-|-----|----------|---------|
-| `<time>`      | false | Time that the work started. Either one of the following formats are required.
-|               |       | `HH:MM` - Absolute start time of the task, example: `08:00`
-|               |       | `HH:MM - HH:MM` - Absolute start and end time, example: `08:00 - 09:00`
-|               |       | `-MM` - Start time relative to the current time, example: `-30` (started 30 minutes ago).
-|               |       | No time if the task starts at the current time, now.
-| `[activity]`  | true  | ‘What you are doing’
-|               |       | Any word without whitespace or special characters, example: `development`
-| `<category>`  | false | Any word without whitespace or special characters, example: `hamster`.
-|               |       | If no category is specified, do not add the `@`-character.
-| `description` | false | Short description of the activity if needed.
-|               |       | If no description is supplied, do not add the `,`-character.
+| Tag           | Required | Comment |
+|---------------|----------|---------|
+| `<time>`      | false    | Time that the work started. Either one of the following formats are required.
+|               |          | `HH:MM` - Absolute start time of the task, example: `08:00`
+|               |          | `HH:MM - HH:MM` - Absolute start and end time, example: `08:00 - 09:00`
+|               |          | `-MM` - Start time relative to the current time, example: `-30` (started 30 minutes ago).
+|               |          | No time if the task starts at the current time, now.
+| `[activity]`  | true     | ‘What you are doing’
+|               |          | Any word without whitespace or special characters, example: `development`
+| `<category>`  | false    | Any word without whitespace or special characters, example: `hamster`.
+|               |          | If no category is specified, do not add the `@`-character.
+| `description` | false    | Short description of the activity if needed.
+|               |          | If no description is supplied, do not add the `,`-character.
 
 For a more complete description, read the docs on the hamster_lib [here](http://hamster-lib.docs.projecthamster.org/en/latest/usage.html#basic-terminology)
 
