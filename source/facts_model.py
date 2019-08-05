@@ -42,6 +42,7 @@ class FactModelPyQt(QAbstractTableModel):
         super(FactModelPyQt, self).__init__()
         self._hamster      = hamster
         self._facts        = []
+        self._totals       = {}
         self._roles        = QAbstractTableModel.roleNames(self)
         roleIndexes        = Qt.UserRole + 1
         self._rKey         = roleIndexes; roleIndexes += 1
@@ -71,6 +72,15 @@ class FactModelPyQt(QAbstractTableModel):
     def refreshFacts(self):
         self.beginResetModel()
         self._facts = self._hamster.list();
+        # Clear the totals and then iterate all facts and
+        # create a map with the day and the total for that day.
+        self._totals = {}
+        for fact in self._facts:
+            day = fact.day()
+            if day not in self._totals:
+                self._totals[ day ] = QTime(0, 0, 0)
+            factDur = fact.duration()
+            self._totals[ day ] = self._totals[ day ].addSecs( ( factDur.hour() * 60 * 60 ) + ( factDur.minute() * 60 ) + factDur.second() )
         self.endResetModel()
 
     @pyqtSlot(FactPyQt)
@@ -121,11 +131,8 @@ class FactModelPyQt(QAbstractTableModel):
         retrieved.
         """
         duration = QTime(0, 0, 0)
-        for fact in self._facts:
-            if(fact.day() == day):
-                factDur = fact.duration()
-                duration = duration.addSecs( ( factDur.hour() * 60 * 60 ) + ( factDur.minute() * 60 ) + factDur.second() )
-
+        if day in self._totals:
+          duration = self._totals[ day ]
         return duration;
 
     @pyqtSlot(int, result='QVariant')
