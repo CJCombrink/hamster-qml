@@ -145,8 +145,7 @@ Item {
 
             FactView {
                 id: tableViewToday
-                Layout.fillWidth: true
-                Layout.fillHeight: true
+                anchors.fill: parent
                 model: sortFilterModel
             }
         }
