@@ -42,7 +42,9 @@ class FactModelPyQt(QAbstractTableModel):
         super(FactModelPyQt, self).__init__()
         self._hamster      = hamster
         self._facts        = []
-        self._totals       = {}
+        self._totals       = {} # Day totals maintained in the model. When the model is refreshed this
+                                # list is refreshed. When new facts are added or exising ones updated,
+                                # the totals are updated accordingly.
         self._roles        = QAbstractTableModel.roleNames(self)
         roleIndexes        = Qt.UserRole + 1
         self._rKey         = roleIndexes; roleIndexes += 1
@@ -89,7 +91,20 @@ class FactModelPyQt(QAbstractTableModel):
         for fact in reversed(self._facts):
             index -= 1
             if fact.key() == updatedFact.key():
+                # Get the duration that we know about for the fact
+                # before the fact is updated
+                factOldDur = fact.duration()
+                factOldDay = fact.day()
+                # Now replace the old fact with the new one
                 self._facts[index] = updatedFact
+                # Update the totals with the new data
+                # First remove the old duration for the old day
+                self._totals[ factOldDay ] = self._totals[ factOldDay ].addSecs( - ( ( factOldDur.hour() * 60 * 60 ) + ( factOldDur.minute() * 60 ) + factOldDur.second() ) )
+                # Then add the new duration
+                factDur = updatedFact.duration();
+                factDay = updatedFact.day()
+                self._totals[ factDay ] = self._totals[ factDay ].addSecs( ( factDur.hour() * 60 * 60 ) + ( factDur.minute() * 60 ) + factDur.second() )
+                # Notify that the data changed
                 self.dataChanged.emit(self.index(index, 0), self.index(index, self.columnCount() - 1), )
                 return
 
@@ -97,6 +112,12 @@ class FactModelPyQt(QAbstractTableModel):
     def addFact(self, fact):
         self.beginInsertRows(QModelIndex(), self.rowCount(), self.rowCount() + 1)
         self._facts.append(fact)
+        # Add the duration to the day of the given fact
+        day = fact.day()
+        if day not in self._totals:
+            self._totals[ day ] = QTime(0, 0, 0)
+        factDur = fact.duration()
+        self._totals[ day ] = self._totals[ day ].addSecs( ( factDur.hour() * 60 * 60 ) + ( factDur.minute() * 60 ) + factDur.second() )
         self.endInsertRows()
 
     def rowCount(self, parent=QModelIndex()):
@@ -125,10 +146,7 @@ class FactModelPyQt(QAbstractTableModel):
     def getDayTotal(self, day):
         """ Get the total time for the specified day.
 
-        This function will not be very effective on a large model.
-        Perhaps the model can store the data sorted according to the day,
-        then at least the calculation will be quicker if the day can be
-        retrieved.
+        This function uses the day totals that are maintained inside the mode.
         """
         duration = QTime(0, 0, 0)
         if day in self._totals:
