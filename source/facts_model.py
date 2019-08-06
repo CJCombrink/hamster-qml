@@ -82,7 +82,7 @@ class FactModelPyQt(QAbstractTableModel):
             if day not in self._totals:
                 self._totals[ day ] = QTime(0, 0, 0)
             factDur = fact.duration()
-            self._totals[ day ] = self._totals[ day ].addSecs( ( factDur.hour() * 60 * 60 ) + ( factDur.minute() * 60 ) + factDur.second() )
+            self._totals[ day ] = self._totals[ day ].addMSecs( factDur.msecsSinceStartOfDay() )
         self.endResetModel()
 
     @pyqtSlot(FactPyQt)
@@ -99,11 +99,11 @@ class FactModelPyQt(QAbstractTableModel):
                 self._facts[index] = updatedFact
                 # Update the totals with the new data
                 # First remove the old duration for the old day
-                self._totals[ factOldDay ] = self._totals[ factOldDay ].addSecs( - ( ( factOldDur.hour() * 60 * 60 ) + ( factOldDur.minute() * 60 ) + factOldDur.second() ) )
+                self._totals[ factOldDay ] = self._totals[ factOldDay ].addMSecs( -1 * factOldDur.msecsSinceStartOfDay() )
                 # Then add the new duration
                 factDur = updatedFact.duration();
                 factDay = updatedFact.day()
-                self._totals[ factDay ] = self._totals[ factDay ].addSecs( ( factDur.hour() * 60 * 60 ) + ( factDur.minute() * 60 ) + factDur.second() )
+                self._totals[ factDay ] = self._totals[ factDay ].addMSecs( factDur.msecsSinceStartOfDay() )
                 # Notify that the data changed
                 self.dataChanged.emit(self.index(index, 0), self.index(index, self.columnCount() - 1), )
                 return
@@ -117,7 +117,7 @@ class FactModelPyQt(QAbstractTableModel):
         if day not in self._totals:
             self._totals[ day ] = QTime(0, 0, 0)
         factDur = fact.duration()
-        self._totals[ day ] = self._totals[ day ].addSecs( ( factDur.hour() * 60 * 60 ) + ( factDur.minute() * 60 ) + factDur.second() )
+        self._totals[ day ] = self._totals[ day ].addMSecs( factDur.msecsSinceStartOfDay()  )
         self.endInsertRows()
 
     def rowCount(self, parent=QModelIndex()):
