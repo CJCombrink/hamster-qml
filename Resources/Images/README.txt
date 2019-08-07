@@ -1,0 +1,1 @@
+The Hamster image was obtained from: https://pixabay.com/illustrations/hamster-pet-mouse-cage-3611868/

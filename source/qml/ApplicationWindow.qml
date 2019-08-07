@@ -34,7 +34,7 @@ ApplicationWindow {
 
     Component.onCompleted: {
         visible = true;
-        textHeader.text = textHeader.text + " (0.4)"
+        textHeader.text = textHeader.text + " (" + py.version + ")"
         py.hamster_lib.current()
     }
     ColumnLayout {

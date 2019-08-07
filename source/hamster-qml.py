@@ -20,21 +20,27 @@
 
 import sys
 
-from PyQt5.QtCore import QObject, pyqtProperty, pyqtSignal, pyqtSlot
-from PyQt5.QtGui  import QGuiApplication
-from PyQt5.QtQuick import QQuickView
-from PyQt5.QtQml import qmlRegisterType, QQmlApplicationEngine
+from PyQt5.QtCore    import QObject, pyqtProperty, pyqtSignal, pyqtSlot
+from PyQt5.QtGui     import QGuiApplication, QIcon
+from PyQt5.QtWidgets import qApp
+from PyQt5.QtQuick   import QQuickView
+from PyQt5.QtQml     import qmlRegisterType, QQmlApplicationEngine
 
 from hamster_pyqt      import HamsterPyQt, FactPyQt
 from facts_model       import FactModelPyQt
 from sort_filter_model import SortFilterModelPyQt
+
+cVERSION = u'0.4'
+# Set the windows ICON (need to figure out what happens on Linux)
+import ctypes
+myappid = u'cjc.hamster-qml.' + cVERSION
+ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 
 class Namespace(QObject):
 
     """Namespace to add clarity on the QML side, contains all Python objects
     exposed to the QML root context as attributes."""
 
-    someSignal = pyqtSignal()
     hamsterLibChanged = pyqtSignal()
     nameChanged = pyqtSignal('QString', name='nameChanged', arguments=['value'])
 
@@ -45,6 +51,11 @@ class Namespace(QObject):
         self._shoeSize = 0
         self._hamster_lib = HamsterPyQt()
         self._facts = FactModelPyQt(self._hamster_lib);
+
+
+    @pyqtProperty(str)
+    def version(self):
+        return cVERSION
 
     # Define the getter of the 'name' property.  The C++ type of the
     # property is QString which Python will convert to and from a string.
@@ -75,6 +86,7 @@ if __name__ == '__main__':
     # Create main app
     sys.argv += ['--style', 'fusion']
     myApp = QGuiApplication(sys.argv)
+    qApp.setWindowIcon(QIcon('../Resources/Images/hamster-gray_256.png'))
     # Register the Python type. Its URI is 'SortFilterModelPyQt', it's v1.0 and the type
     # will be called 'SortFilterModelPyQt' in QML.
     qmlRegisterType(SortFilterModelPyQt, 'SortFilterModelPyQt', 1, 0, 'SortFilterModelPyQt')
