@@ -42,7 +42,6 @@ class Namespace(QObject):
     exposed to the QML root context as attributes."""
 
     hamsterLibChanged = pyqtSignal()
-    nameChanged = pyqtSignal('QString', name='nameChanged', arguments=['value'])
 
     def __init__(self):
         super(Namespace, self).__init__()
@@ -52,26 +51,9 @@ class Namespace(QObject):
         self._hamster_lib = HamsterPyQt()
         self._facts = FactModelPyQt(self._hamster_lib);
 
-
     @pyqtProperty(str)
     def version(self):
         return cVERSION
-
-    # Define the getter of the 'name' property.  The C++ type of the
-    # property is QString which Python will convert to and from a string.
-    @pyqtProperty('QString', notify=nameChanged)
-    def name(self):
-        return self._name
-
-    # Define the setter of the 'name' property.
-    @name.setter
-    def name(self, name):
-        self._name = name
-        self.nameChanged.emit(self._name)
-
-    @pyqtSlot('QString')
-    def setup_new_name(self, new_name):
-        self.name = new_name
 
     @pyqtProperty(QObject, notify=hamsterLibChanged)
     def hamster_lib(self):
