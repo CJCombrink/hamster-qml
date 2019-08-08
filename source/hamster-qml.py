@@ -20,24 +20,30 @@
 
 import sys
 
-from PyQt5.QtCore import QObject, pyqtProperty, pyqtSignal, pyqtSlot
-from PyQt5.QtGui  import QGuiApplication
-from PyQt5.QtQuick import QQuickView
-from PyQt5.QtQml import qmlRegisterType, QQmlApplicationEngine
+from PyQt5.QtCore    import QObject, pyqtProperty, pyqtSignal, pyqtSlot
+from PyQt5.QtGui     import QGuiApplication, QIcon
+from PyQt5.QtWidgets import qApp
+from PyQt5.QtQuick   import QQuickView
+from PyQt5.QtQml     import qmlRegisterType, QQmlApplicationEngine
 
 from hamster_pyqt      import HamsterPyQt, FactPyQt
 from facts_model       import FactModelPyQt
 from sort_filter_model import SortFilterModelPyQt
 
+cVERSION = u'0.4'
+# Set the windows ICON (need to figure out what happens on Linux)
+import ctypes
+myappid = u'cjc.hamster-qml.' + cVERSION
+ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+
 class Namespace(QObject):
 
     """Namespace to add clarity on the QML side, contains all Python objects
     exposed to the QML root context as attributes."""
-    
-    someSignal = pyqtSignal()
+
     hamsterLibChanged = pyqtSignal()
     nameChanged = pyqtSignal('QString', name='nameChanged', arguments=['value'])
-    
+
     def __init__(self):
         super(Namespace, self).__init__()
         # Initialise the value of the properties.
@@ -45,6 +51,11 @@ class Namespace(QObject):
         self._shoeSize = 0
         self._hamster_lib = HamsterPyQt()
         self._facts = FactModelPyQt(self._hamster_lib);
+
+
+    @pyqtProperty(str)
+    def version(self):
+        return cVERSION
 
     # Define the getter of the 'name' property.  The C++ type of the
     # property is QString which Python will convert to and from a string.
@@ -58,21 +69,10 @@ class Namespace(QObject):
         self._name = name
         self.nameChanged.emit(self._name)
 
-    # Define the getter of the 'shoeSize' property.  The C++ type and
-    # Python type of the property is int.
-    @pyqtProperty(int)
-    def shoeSize(self):
-        return self._shoeSize
-
-    # Define the setter of the 'shoeSize' property.
-    @shoeSize.setter
-    def shoeSize(self, shoeSize):
-        self._shoeSize = shoeSize
-        
     @pyqtSlot('QString')
     def setup_new_name(self, new_name):
         self.name = new_name
-        
+
     @pyqtProperty(QObject, notify=hamsterLibChanged)
     def hamster_lib(self):
         return self._hamster_lib
@@ -84,7 +84,9 @@ class Namespace(QObject):
 # Main Function
 if __name__ == '__main__':
     # Create main app
+    sys.argv += ['--style', 'fusion']
     myApp = QGuiApplication(sys.argv)
+    qApp.setWindowIcon(QIcon('../Resources/Images/hamster-gray_256.png'))
     # Register the Python type. Its URI is 'SortFilterModelPyQt', it's v1.0 and the type
     # will be called 'SortFilterModelPyQt' in QML.
     qmlRegisterType(SortFilterModelPyQt, 'SortFilterModelPyQt', 1, 0, 'SortFilterModelPyQt')
@@ -92,10 +94,10 @@ if __name__ == '__main__':
     engine = QQmlApplicationEngine()
     context = engine.rootContext()
     # Add the namespace as 'py' in the QML context. If this is done, one can
-    # clearly see which objects are accessed from the python side. 
+    # clearly see which objects are accessed from the python side.
     py =  Namespace()
     context.setContextProperty('py', py)
     engine.load('qml/main.qml')
     sys.exit(myApp.exec_())
-    
+
     #http://stackoverflow.com/questions/33374257/pyqt-5-5-qml-combobox

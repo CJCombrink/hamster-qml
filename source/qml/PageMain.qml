@@ -4,16 +4,16 @@
 **
 ** This file is part of the Hamster QML GUI, a QML GUI for the hamster-lib.
 **
-** The Hamster QML GUI is free software: you can redistribute it and/or 
-** modify it under the terms of the GNU Lesser General Public License as 
-** published by the Free Software Foundation, either version 3 of the 
+** The Hamster QML GUI is free software: you can redistribute it and/or
+** modify it under the terms of the GNU Lesser General Public License as
+** published by the Free Software Foundation, either version 3 of the
 ** License, or (at your option) any later version.
-** 
+**
 ** The Hamster QML GUI is distributed in the hope that it will be useful,
 ** but WITHOUT ANY WARRANTY; without even the implied warranty of
 ** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ** GNU Lesser General Public License for more details.
-** 
+**
 ** You should have received a copy of the GNU Lesser General Public License
 ** along with the Hamster QML GUI. If not, see <http://www.gnu.org/licenses/>.
 ****************************************************************************/
@@ -47,12 +47,15 @@ Item {
             id: groupBoxCurrent
             title: "Current work"
             Layout.fillWidth: true
+
             RowLayout {
                 id: currentRowLayout
                 anchors.fill: parent
+
                 TextField {
                     id: textFieldCurrent
                     placeholderText: "<no work in progress>"
+                    selectByMouse: true
                     readOnly: true
                     Layout.fillWidth: true
                 }
@@ -80,35 +83,50 @@ Item {
             id: rowBox
             title: "Log work"
             Layout.fillWidth: true
-            
-            ColumnLayout {
+
+            RowLayout {
+                id: rowLayoutActivity
                 anchors.fill: parent
-                RowLayout {
-                    id: rowLayoutActivity
-                    anchors.fill: parent
-                    TextField {
-                        id: textFieldNew
-                        placeholderText: "<time> [activity]@<category>, description"
-                        validator: RegExpValidator { regExp: /^((((([01]\d|2[0-3]):)([0-5]\d) )(- ((([01]\d|2[0-3]):)([0-5]\d)) )?)|(-\d+) )?\w+(@\w+(, .+)?)?$/ }
-                        Layout.fillWidth: true
-                        focus: true
-                        Keys.onPressed: {
-                            if ((event.key == Qt.Key_Enter) || (event.key == Qt.Key_Return) ){
-                                buttonStart.clicked()
-                                event.accepted = true;
-                            } else if(event.key == Qt.Key_Escape) {
-                                textFieldNew.text = ""
-                                event.accepted = true;
-                            }
+
+                TextField {
+                    id: textFieldNew
+                    placeholderText: "<time> [activity]@<category>, description"
+                    validator: RegExpValidator { }
+                    Layout.fillWidth: true
+                    focus: true
+                    selectByMouse: true
+                    Keys.onPressed: {
+                        if ((event.key == Qt.Key_Enter) || (event.key == Qt.Key_Return) ){
+                            buttonStart.clicked()
+                            event.accepted = true;
+                        } else if(event.key == Qt.Key_Escape) {
+                            textFieldNew.text = ""
+                            event.accepted = true;
                         }
                     }
-                    Button {
-                        id: buttonStart
-                        text: "Start"
-                        enabled: textFieldNew.text ? true: false
-                        onClicked: { 
-                            py.hamster_lib.start(textFieldNew.text)
-                        }
+                    Component.onCompleted: {
+                        /* Build up the final RegExp using logical parts.
+                         * This is to allow for better understanding, and will
+                         * allow future work to allow custom formats */
+                        const reTimeFormat    = '(([01]\\d|2[0-3]):)([0-5]\\d)'
+                        const reMaybeTimeSpan =  '((' + reTimeFormat +' )(- (' + reTimeFormat + ') )?)'
+                        const reMinutesAgo    = '(-\\d+)'
+                        const reActivity      = '[A-Za-z0-9_-]+'
+                        const reCategory      = '@[A-Za-z0-9_-]*'
+                        const reComment       = ', .+'
+                        const reMaybeCategory = '(' + reCategory + ')?'
+                        const reMaybeComment  = '(' + reComment + ')?'
+                        /* Create the final pattern. */
+                        const reFinal         = '^('+ reMaybeTimeSpan + '|' + reMinutesAgo + ' )?' + reActivity + reMaybeCategory + reMaybeComment + '$'
+                        validator.regExp      = new RegExp( reFinal )
+                    }
+                }
+                Button {
+                    id: buttonStart
+                    text: "Start"
+                    enabled: textFieldNew.text ? true: false
+                    onClicked: {
+                        py.hamster_lib.start(textFieldNew.text)
                     }
                 }
             }
@@ -130,8 +148,6 @@ Item {
             FactView {
                 id: tableViewToday
                 anchors.fill: parent
-                Layout.fillWidth: true
-                Layout.fillHeight: true
                 model: sortFilterModel
             }
         }
@@ -152,7 +168,7 @@ Item {
         }
         closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
     }
-    
+
     Timer {
         id: currentTimer
         interval: 1000

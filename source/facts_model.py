@@ -20,6 +20,7 @@
 
 import sys
 from PyQt5.QtCore import Qt, QObject, pyqtProperty, pyqtSignal, pyqtSlot, QAbstractTableModel, QModelIndex, QByteArray, QVariant
+from PyQt5.QtCore import QTime, QDate
 
 from hamster_lib import Fact
 
@@ -28,19 +29,22 @@ from hamster_pyqt import FactPyQt
 
 class FactModelPyQt(QAbstractTableModel):
     """ Fact Model """
-    COLUMNS = ('key'        , 
-               'start'      , 
-               'end'        , 
-               'activity'   , 
-               'category'   , 
-               'description', 
+    COLUMNS = ('key'        ,
+               'start'      ,
+               'end'        ,
+               'activity'   ,
+               'category'   ,
+               'description',
                'duration'   ,
                'day'        )
- 
+
     def __init__(self, hamster):
         super(FactModelPyQt, self).__init__()
         self._hamster      = hamster
         self._facts        = []
+        self._totals       = {} # Day totals maintained in the model. When the model is refreshed this
+                                # list is refreshed. When new facts are added or exising ones updated,
+                                # the totals are updated accordingly.
         self._roles        = QAbstractTableModel.roleNames(self)
         roleIndexes        = Qt.UserRole + 1
         self._rKey         = roleIndexes; roleIndexes += 1
@@ -51,7 +55,7 @@ class FactModelPyQt(QAbstractTableModel):
         self._rDescription = roleIndexes; roleIndexes += 1
         self._rDuration    = roleIndexes; roleIndexes += 1
         self._rDay         = roleIndexes; roleIndexes += 1
-        # Reset the index to reuse 
+        # Reset the index to reuse
         roleIndexes      = 0
         self._roles[self._rKey        ] = QByteArray().append(FactModelPyQt.COLUMNS[roleIndexes]); roleIndexes += 1
         self._roles[self._rStart      ] = QByteArray().append(FactModelPyQt.COLUMNS[roleIndexes]); roleIndexes += 1
@@ -61,39 +65,67 @@ class FactModelPyQt(QAbstractTableModel):
         self._roles[self._rDescription] = QByteArray().append(FactModelPyQt.COLUMNS[roleIndexes]); roleIndexes += 1
         self._roles[self._rDuration   ] = QByteArray().append(FactModelPyQt.COLUMNS[roleIndexes]); roleIndexes += 1
         self._roles[self._rDay        ] = QByteArray().append(FactModelPyQt.COLUMNS[roleIndexes]); roleIndexes += 1
-        
+
         self.refreshFacts()
         self._hamster.factUpdated.connect(self.updateFact)
         self._hamster.factAdded.connect(self.addFact)
-        
+
     @pyqtSlot()
     def refreshFacts(self):
         self.beginResetModel()
         self._facts = self._hamster.list();
+        # Clear the totals and then iterate all facts and
+        # create a map with the day and the total for that day.
+        self._totals = {}
+        for fact in self._facts:
+            day = fact.day()
+            if day not in self._totals:
+                self._totals[ day ] = QTime(0, 0, 0)
+            factDur = fact.duration()
+            self._totals[ day ] = self._totals[ day ].addMSecs( factDur.msecsSinceStartOfDay() )
         self.endResetModel()
-        
+
     @pyqtSlot(FactPyQt)
     def updateFact(self, updatedFact):
         index = len(self._facts)
         for fact in reversed(self._facts):
             index -= 1
-            if fact.key() == updatedFact.key(): 
+            if fact.key() == updatedFact.key():
+                # Get the duration that we know about for the fact
+                # before the fact is updated
+                factOldDur = fact.duration()
+                factOldDay = fact.day()
+                # Now replace the old fact with the new one
                 self._facts[index] = updatedFact
+                # Update the totals with the new data
+                # First remove the old duration for the old day
+                self._totals[ factOldDay ] = self._totals[ factOldDay ].addMSecs( -1 * factOldDur.msecsSinceStartOfDay() )
+                # Then add the new duration
+                factDur = updatedFact.duration();
+                factDay = updatedFact.day()
+                self._totals[ factDay ] = self._totals[ factDay ].addMSecs( factDur.msecsSinceStartOfDay() )
+                # Notify that the data changed
                 self.dataChanged.emit(self.index(index, 0), self.index(index, self.columnCount() - 1), )
                 return
-         
+
     @pyqtSlot(FactPyQt)
     def addFact(self, fact):
         self.beginInsertRows(QModelIndex(), self.rowCount(), self.rowCount() + 1)
         self._facts.append(fact)
+        # Add the duration to the day of the given fact
+        day = fact.day()
+        if day not in self._totals:
+            self._totals[ day ] = QTime(0, 0, 0)
+        factDur = fact.duration()
+        self._totals[ day ] = self._totals[ day ].addMSecs( factDur.msecsSinceStartOfDay()  )
         self.endInsertRows()
 
-    def rowCount(self, parent=QModelIndex()): 
-        return len(self._facts) 
-        
-    def columnCount(self, parent=QModelIndex()): 
+    def rowCount(self, parent=QModelIndex()):
+        return len(self._facts)
+
+    def columnCount(self, parent=QModelIndex()):
         return len(FactModelPyQt.COLUMNS)
-        
+
     def data(self, index, role):
         if not index.isValid():
             return None
@@ -106,10 +138,21 @@ class FactModelPyQt(QAbstractTableModel):
         elif role == self._rDuration    : return self._facts[index.row()].duration()
         elif role == self._rDay         : return self._facts[index.row()].day()
         else: return None
-        
+
     def roleNames(self):
         return self._roles
-        
+
+    @pyqtSlot(QDate, result='QVariant')
+    def getDayTotal(self, day):
+        """ Get the total time for the specified day.
+
+        This function uses the day totals that are maintained inside the mode.
+        """
+        duration = QTime(0, 0, 0)
+        if day in self._totals:
+          duration = self._totals[ day ]
+        return duration;
+
     @pyqtSlot(int, result='QVariant')
     def get(self, row):
         headers = {}

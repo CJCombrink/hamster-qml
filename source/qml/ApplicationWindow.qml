@@ -4,23 +4,23 @@
 **
 ** This file is part of the Hamster QML GUI, a QML GUI for the hamster-lib.
 **
-** The Hamster QML GUI is free software: you can redistribute it and/or 
-** modify it under the terms of the GNU Lesser General Public License as 
-** published by the Free Software Foundation, either version 3 of the 
+** The Hamster QML GUI is free software: you can redistribute it and/or
+** modify it under the terms of the GNU Lesser General Public License as
+** published by the Free Software Foundation, either version 3 of the
 ** License, or (at your option) any later version.
-** 
+**
 ** The Hamster QML GUI is distributed in the hope that it will be useful,
 ** but WITHOUT ANY WARRANTY; without even the implied warranty of
 ** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ** GNU Lesser General Public License for more details.
-** 
+**
 ** You should have received a copy of the GNU Lesser General Public License
 ** along with the Hamster QML GUI. If not, see <http://www.gnu.org/licenses/>.
 ****************************************************************************/
 
 import QtQuick 2.8
-import QtQuick.Controls 2.1
-import QtQuick.Layouts 1.3
+import QtQuick.Controls 2.12
+import QtQuick.Layouts 1.12
 import QtQuick.Window 2.2
 
 ApplicationWindow {
@@ -32,19 +32,16 @@ ApplicationWindow {
     minimumWidth: 470
     height: 500
 
-    property int margin: 11
-
     Component.onCompleted: {
         visible = true;
-        textHeader.text = textHeader.text + " (0.3)"
+        textHeader.text = textHeader.text + " (" + py.version + ")"
         py.hamster_lib.current()
     }
     ColumnLayout {
         id: mainLayout
         anchors.fill: parent
-        anchors.margins: margin
 
-        Text {
+        Label {
             id: textHeader
             text: "Hamster QML"
             color: "blue"
@@ -59,9 +56,6 @@ ApplicationWindow {
             TabButton {
                 text: qsTr("Input")
             }
-//            TabButton {
-//                text: qsTr("Minimal")
-//            }
             TabButton {
                 text: qsTr("Overview")
             }
@@ -77,8 +71,6 @@ ApplicationWindow {
                     anchors.fill: parent
                 }
             }
-//            Item {
-//            }
             Item {
                 PageOverview {
                     visible: true

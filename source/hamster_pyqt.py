@@ -19,7 +19,7 @@
 ############################################################################
 import sys
 import datetime
-from datetime import timedelta 
+from datetime import timedelta
 
 from PyQt5.QtCore import QObject, pyqtProperty, pyqtSignal, pyqtSlot, QDateTime, QDate, QTime
 
@@ -27,51 +27,58 @@ import hamster_lib
 from hamster_lib import Fact, HamsterControl, reports, Category, Activity
 from hamster_lib.helpers import time as time_helpers
 
+# The start time has the following offset in seconds applied when started.
+# This overcomes the issue where facts are started without specifying
+# a time that conflicts with one that was stopped by specifying a time.
+# Sometimes there were a small overlap in seconds and the backend did
+# not like this. This should ensure that this does not happen.
+FACT_START_OFFSET = 10 # seconds
+
 class FactPyQt(QObject):
     """ QObject wrapper for a fact """
     def __init__(self, fact):
         super(FactPyQt, self).__init__()
         self._fact = fact
-        
+
     @pyqtSlot(result='QDateTime')
     def start(self):
         return QDateTime(self._fact.start)
-    
+
     @pyqtSlot(result='QDateTime')
     def end(self):
         return QDateTime(self._fact.end)
-    
+
     @pyqtSlot(result='QString')
     def description(self):
         return self._fact.description
-    
+
     @pyqtSlot(result='QString')
     def category(self):
         if not self._fact.category:
             return ""
         else:
             return self._fact.category.name
-        
+
     @pyqtSlot(result='QString')
     def activity(self):
         return self._fact.activity.name
-        
+
     @pyqtSlot(result='int')
-    def key(self): 
+    def key(self):
         return self._fact.pk
-        
+
     @pyqtSlot(result='QTime')
     def duration(self):
-        return QTime(0, 0, 0).addSecs(self.start().secsTo(self.end()))
-        
+        return QTime(0, 0, FACT_START_OFFSET).addSecs(self.start().secsTo(self.end()))
+
     @pyqtSlot(result='QDate')
     def day(self):
         return self.end().date()
 
 class HamsterConfig():
-    """ Configuration class for the Hamster Library 
+    """ Configuration class for the Hamster Library
         This class will most probrbaly be replaced by a ConfigParser class """
-    
+
     def __init__(self):
         self._options = {
             'store'          : 'sqlalchemy',
@@ -80,28 +87,28 @@ class HamsterConfig():
             'db_engine'      : 'sqlite',
             'db_path'        : 'hamster_pyqt.sqlite',
             'tmpfile_path'   : 'hamster_pyqt.fact'
-        } 
-        
+        }
+
     def get(self, key, default = ''):
         if key in self._options:
             return self._options[key]
         else:
             return default;
-        
-    def __getitem__(self, key):
-        return self.get(key)   
 
-        
+    def __getitem__(self, key):
+        return self.get(key)
+
+
 class HamsterPyQt(QObject):
     """ Hamser interface """
-    
+
     currentUpdated  = pyqtSignal(FactPyQt, name='currentUpdated', arguments=['current'])
     errorMessage    = pyqtSignal('QString', name='errorMessage', arguments=['message'])
     startSuccessful = pyqtSignal(name='startSuccessful')
     stopSuccessful  = pyqtSignal(name='stopSuccessful')
     factUpdated     = pyqtSignal(FactPyQt, name='factUpdated', arguments=['fact'])
     factAdded       = pyqtSignal(FactPyQt, name='factAdded', arguments=['fact'])
-    
+
     def __init__(self):
         super(HamsterPyQt, self).__init__()
         self._config     = HamsterConfig()
@@ -113,14 +120,14 @@ class HamsterPyQt(QObject):
         # a time that conflicts with one that was stopped by specifying a time.
         # Sometimes there were a small overlap in seconds and the backend did
         # not like this. This should ensure that this does not happen.
-        return start.replace(second=10, microsecond=0)
+        return start.replace(second=FACT_START_OFFSET, microsecond=0)
 
     def _cleanEnd(self, end):
         # Update the stop time of the fact to always be on the minute.
         # this will overcome the issue of stopping a fact and starting
         # one for the same minute.
         return end.replace(second=0, microsecond=0)
-        
+
     @pyqtSlot()
     def list(self, start_time = '', end_time = ''):
         """ List all facts that are between the supplied start and end times. """
@@ -136,20 +143,26 @@ class HamsterPyQt(QObject):
                 factPyQt = FactPyQt(fact)
                 factsPyQt.append(factPyQt)
             return factsPyQt
-        
+
     @pyqtSlot('QString')
     def start(self, command):
         """ Start a fact """
         if not command:
             self.errorMessage.emit('Empty fact information, can\'t start fact.')
             return
-        fact = Fact.create_from_raw_fact(command) 
+
+        # Some basic handling
+        # If the command has a comma but no @, add the @ since comma is for comment
+        if ( ',' in command ) and ( not '@' in command ):
+            command = command.replace( ',', '@,' )
+
+        fact = Fact.create_from_raw_fact(command)
         if not fact.start:
-            # No start time for the fact, set to now 
+            # No start time for the fact, set to now
             fact.start = datetime.datetime.now()
         # Clean up the fact start as per the hamster-QML interface.
         fact.start = self._cleanStart(fact.start)
-        # Save the fact. If the fact does not have an end time it will be set as the 
+        # Save the fact. If the fact does not have an end time it will be set as the
         # current fact.
 
         # At this point first check if there is not alreay a fact ongoing,
@@ -157,7 +170,7 @@ class HamsterPyQt(QObject):
         # the stop time of the ongoing fact.
         self.stop(fact.start, True)
 
-        try: 
+        try:
             fact = self._control.facts.save(fact)
         except ValueError as err:
             self.errorMessage.emit("Fact start error: {0}".format(err))
@@ -194,7 +207,7 @@ class HamsterPyQt(QObject):
     @pyqtSlot()
     def stop(self, endTime = None, ignoreError=False):
         """ Stop an ongoing fact """
-        try: 
+        try:
             fact = self._control.facts.stop_tmp_fact()
         except ValueError as err:
             if ignoreError == False:
@@ -210,7 +223,7 @@ class HamsterPyQt(QObject):
         fact.end = self._cleanEnd(fact.end)
         try:
             self._control.facts.save(fact)
-        except:
+        except ValueError as err:
             self.errorMessage.emit("Fact stop error: {0}".format(err))
             self.current()
             return
@@ -226,9 +239,9 @@ class HamsterPyQt(QObject):
             self._control.facts.cancel_tmp_fact()
         except KeyError:
             print('No fact to cancel')
-        
+
         self.current()
-        
+
     @pyqtSlot()
     def current(self):
         """ List the current active fact """
@@ -236,11 +249,11 @@ class HamsterPyQt(QObject):
             fact = self._control.facts.get_tmp_fact()
         except KeyError:
             self.currentUpdated.emit(None);
-        else: 
+        else:
             fact.end = datetime.datetime.now()
             string = '{fact} ({duration} minutes)'.format(fact=fact, duration=fact.get_string_delta())
             self.currentUpdated.emit(FactPyQt(fact));
-            
+
 
     @pyqtSlot(int, 'QDateTime', 'QDateTime', 'QString', 'QString', 'QString')
     def updateFact(self, key, startTime, endTime, activity, category, description):
