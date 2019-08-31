@@ -46,8 +46,9 @@ Item {
                 anchors.fill: parent
                 ColumnLayout {
                     Label  {
+                        id: labelStart_
                         text: "Start"
-                        font.pixelSize: 14
+                        font.pointSize: 12
                         font.bold     : true
                         color         : "steelblue"
                     }
@@ -68,9 +69,8 @@ Item {
                 ColumnLayout {
                     Label  {
                         text: "End"
-                        font.pixelSize: 14
-                        font.bold     : true
-                        color         : "steelblue"
+                        font: labelStart_.font
+                        color: labelStart_.color
                     }
                     DateEdit {
                         id: timeEditEnd
@@ -86,6 +86,8 @@ Item {
                 ColumnLayout {
                     Label {
                         text: "New Fact"
+                        font: labelStart_.font
+                        color: labelStart_.colorw
                     }
                     DateEdit {
                         id: timeEditNewFact
