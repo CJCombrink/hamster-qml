@@ -29,7 +29,15 @@ from hamster_pyqt import HamsterPyQt
 from hamster_pyqt import FactPyQt
 
 class HqCategoriesModel(QStandardItemModel):
-    """ Categories Tree Model """
+    """
+    Categories Tree Model.
+    This model contains the categories and their activities in a tree model.
+    Uncategorised activities are shown in the 'Uncategorised' node.
+    This model allows for the removal of categories and activities if the
+    respective item does not have dependents.
+    Use the canRemove() function to check if the removeItem() function will
+    remove the item.
+    """
     COLUMNS = ('name'       ,
                'key'        ,
                'type'       )
