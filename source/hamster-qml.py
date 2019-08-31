@@ -29,6 +29,7 @@ from PyQt5.QtQml     import qmlRegisterType, QQmlApplicationEngine
 from hamster_pyqt      import HamsterPyQt, FactPyQt
 from facts_model       import FactModelPyQt
 from sort_filter_model import SortFilterModelPyQt
+from categories_model  import HqCategoriesModel
 
 cVERSION = u'0.4'
 # Set the windows ICON (need to figure out what happens on Linux)
@@ -50,6 +51,7 @@ class Namespace(QObject):
         self._shoeSize = 0
         self._hamster_lib = HamsterPyQt()
         self._facts = FactModelPyQt(self._hamster_lib);
+        self._categories = HqCategoriesModel(self._hamster_lib)
 
     @pyqtProperty(str)
     def version(self):
@@ -62,6 +64,10 @@ class Namespace(QObject):
     @pyqtProperty(QObject, notify=hamsterLibChanged)
     def fact_model(self):
         return self._facts
+
+    @pyqtProperty(QObject)
+    def category_model(self):
+        return self._categories
 
 # Main Function
 if __name__ == '__main__':
