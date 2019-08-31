@@ -59,6 +59,9 @@ ApplicationWindow {
             TabButton {
                 text: qsTr("Overview")
             }
+            TabButton {
+                text: qsTr("Configure")
+            }
         }
 
         StackLayout {
@@ -73,6 +76,12 @@ ApplicationWindow {
             }
             Item {
                 PageOverview {
+                    visible: true
+                    anchors.fill: parent
+                }
+            }
+            Item {
+                PageConfigure {
                     visible: true
                     anchors.fill: parent
                 }

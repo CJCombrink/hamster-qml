@@ -20,10 +20,10 @@
 
 import sys
 
-from PyQt5.QtCore    import QObject, pyqtProperty, pyqtSignal, pyqtSlot
-from PyQt5.QtGui     import QGuiApplication, QIcon
+from PyQt5.QtCore    import QObject, pyqtProperty, pyqtSignal, pyqtSlot, Qt
+from PyQt5.QtGui     import QGuiApplication, QIcon, QImage
 from PyQt5.QtWidgets import qApp
-from PyQt5.QtQuick   import QQuickView
+from PyQt5.QtQuick   import QQuickView, QQuickImageProvider
 from PyQt5.QtQml     import qmlRegisterType, QQmlApplicationEngine
 
 from hamster_pyqt      import HamsterPyQt, FactPyQt
@@ -37,8 +37,32 @@ import ctypes
 myappid = u'cjc.hamster-qml.' + cVERSION
 ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 
-class Namespace(QObject):
+class ImageProvider(QQuickImageProvider):
+    """
+    Image provider for the qml to resolve images from name
+    if the style does not provide the correct image.
+    The provider uses the icon naming spec from:
+    https://specifications.freedesktop.org/icon-naming-spec/icon-naming-spec-latest.html
+    """
+    def __init__(self):
+        super(ImageProvider, self).__init__(QQuickImageProvider.Image)
 
+    def requestImage(self, imageId, size):
+        imagePath = '../Resources/Images/'
+        imageDict = {
+          'list-add'    : 'list-add.svg',
+          'list-remove' : 'list-remove.svg',
+          'view-refresh': 'view-refresh.svg'
+        }
+
+        imageName = imageDict.get( imageId )
+        if imageName is not None:
+          img = QImage( imagePath + imageName).scaled(size, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        else:
+          img = QImage()
+        return img, img.size()
+
+class Namespace(QObject):
     """Namespace to add clarity on the QML side, contains all Python objects
     exposed to the QML root context as attributes."""
 
@@ -80,6 +104,7 @@ if __name__ == '__main__':
     qmlRegisterType(SortFilterModelPyQt, 'SortFilterModelPyQt', 1, 0, 'SortFilterModelPyQt')
     # Create the QML Engine
     engine = QQmlApplicationEngine()
+    engine.addImageProvider("images", ImageProvider())
     context = engine.rootContext()
     # Add the namespace as 'py' in the QML context. If this is done, one can
     # clearly see which objects are accessed from the python side.
