@@ -87,7 +87,7 @@ Item {
                     Label {
                         text: "New Fact"
                         font: labelStart_.font
-                        color: labelStart_.colorw
+                        color: labelStart_.color
                     }
                     DateEdit {
                         id: timeEditNewFact

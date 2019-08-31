@@ -34,13 +34,6 @@ class HqCategoriesModel(QStandardItemModel):
                'key'        ,
                'type'       )
 
-    class Type:
-       Category = 0
-       Activity = 1
-
-
-    Q_ENUMS(Type)
-
     def __init__(self, hamster):
         super(HqCategoriesModel, self).__init__()
         self._hamster      = hamster
