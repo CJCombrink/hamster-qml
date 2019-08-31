@@ -76,14 +76,14 @@ Item {
             anchors.fill: parent
             ToolButton {
               icon.name: 'view-refresh'
-              icon.source: toolBar_.imageProvider + icon.name
+              icon.source: toolBar_.imageProvider + 'view-refresh'
               icon.width : toolBar_.iconSize
               icon.height: toolBar_.iconSize
               onPressed: py.category_model.refreshCategories()
             }
             ToolButton {
               icon.name: 'list-add'
-              icon.source: toolBar_.imageProvider + icon.name
+              icon.source: toolBar_.imageProvider + 'list-add'
               icon.width : toolBar_.iconSize
               icon.height: toolBar_.iconSize
               onPressed: py.category_model.refreshCategories()
@@ -91,7 +91,7 @@ Item {
             ToolButton {
               id: toolButtonRemove_
               icon.name: 'list-remove'
-              icon.source: toolBar_.imageProvider + icon.name
+              icon.source: toolBar_.imageProvider + 'list-remove'
               icon.width : toolBar_.iconSize
               icon.height: toolBar_.iconSize
               icon.color: enabled? "transparent": "lightgray"
