@@ -72,7 +72,6 @@ class Namespace(QObject):
         super(Namespace, self).__init__()
         # Initialise the value of the properties.
         self._name = 'hamster'
-        self._shoeSize = 0
         self._hamster_lib = HamsterPyQt()
         self._facts = FactModelPyQt(self._hamster_lib);
         self._categories = HqCategoriesModel(self._hamster_lib)
