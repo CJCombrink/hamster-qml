@@ -23,6 +23,7 @@ import QtQuick.Controls 2.5
 import QtQuick.Layouts 1.3
 import QtQuick.Controls 1.6 as C1
 import QtQuick.Controls.Styles 1.4
+import QtQuick.Window 2.12
 
 Item {
   id: pageConfigure
@@ -79,14 +80,14 @@ Item {
               icon.source: toolBar_.imageProvider + 'view-refresh'
               icon.width : toolBar_.iconSize
               icon.height: toolBar_.iconSize
-              onPressed: py.category_model.refreshCategories()
+              onClicked: py.category_model.refreshCategories()
             }
             ToolButton {
               icon.name: 'list-add'
               icon.source: toolBar_.imageProvider + 'list-add'
               icon.width : toolBar_.iconSize
               icon.height: toolBar_.iconSize
-              onPressed: py.category_model.refreshCategories()
+              onClicked: windowCategoryAdd_.show()
             }
             ToolButton {
               id: toolButtonRemove_
@@ -157,6 +158,90 @@ Item {
             }
 
             model: py.category_model
+          }
+        }
+      }
+    }
+  }
+
+
+  Window {
+    id: windowCategoryAdd_
+    title        : "Add Activity or Category"
+    width        : layout_.implicitWidth + 2 * margin
+    height       : layout_.implicitHeight + 2 * margin
+    minimumWidth : layout_.Layout.minimumWidth + 2 * margin
+    minimumHeight: layout_.Layout.minimumHeight + 2 * margin
+    flags        : Qt.Dialog
+    modality     : Qt.WindowModal
+
+    ColumnLayout {
+      id: layout_
+      anchors.fill   : parent
+      anchors.margins: margin
+
+      Text {
+        id: textHeader
+        text               : "Enter Activity or Category to add"
+        color              : "blue"
+        font.pointSize     : 14
+        Layout.fillWidth   : true
+        horizontalAlignment: Text.AlignLeft
+      }
+      GroupBox {
+        id: groupBoxCurrent
+        Layout.fillWidth: true
+        RowLayout {
+          id: currentRowLayout
+          anchors.fill: parent
+          ColumnLayout {
+            Layout.fillWidth: true
+            Label  {
+              text: "Activity"
+            }
+            TextField {
+              id: textActivity_
+              Layout.fillWidth: true
+              selectByMouse: true
+            }
+          }
+          ColumnLayout {
+            Layout.fillWidth: true
+            Label  {
+              text: "Category"
+            }
+            ComboBox {
+              id: comboCategory_
+              Layout.fillWidth: true
+              editable: true
+              currentIndex: -1
+              textRole: "name"
+              model: py.category_model
+            }
+          }
+        }
+      }
+      Rectangle {
+        height: 30
+        Layout.fillWidth: true
+
+        RowLayout {
+          Button {
+            text: "Ok"
+            enabled: true
+            onClicked: {
+              py.category_model.addActivity(textActivity_.text, comboCategory_.editText )
+              windowCategoryAdd_.close();
+            }
+          }
+
+          Button {
+            text: "Cancel"
+            onClicked: windowCategoryAdd_.close()
+          }
+
+          Rectangle {
+            Layout.fillWidth: true
           }
         }
       }
