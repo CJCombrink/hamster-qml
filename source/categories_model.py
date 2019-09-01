@@ -105,3 +105,10 @@ class HqCategoriesModel(QStandardItemModel):
       if type == "Activity":
         return self._hamster.canRemoveActivity(index.data(self._rKey))
       return False
+
+    @pyqtSlot(str, str)
+    def addActivity(self, activity, category):
+      added = self._hamster.addActivity( activity, category )
+      if added:
+        self.refreshCategories()
+

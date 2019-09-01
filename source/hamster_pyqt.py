@@ -389,3 +389,17 @@ class HamsterPyQt(QObject):
       rawActivity = self._control.activities.get( pk, raw=True )
       return len( rawActivity.facts ) == 0
 
+    @pyqtSlot(str, str, result=bool)
+    def addActivity(self, activityName, categoryName):
+      activityName = activityName.strip()
+      categoryName = categoryName.strip()
+
+      category = None
+      activity = None
+      if categoryName != "" and categoryName != "(uncategorised)":
+        category = self._control.categories.get_or_create(Category(categoryName))
+
+      if activityName != "":
+        activity = self._control.activities.get_or_create(Activity(activityName, category=category))
+
+      return category is not None or activity is not None
