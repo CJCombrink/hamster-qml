@@ -21,7 +21,7 @@ import sys
 import datetime
 from datetime import timedelta
 
-from PyQt5.QtCore import QObject, pyqtProperty, pyqtSignal, pyqtSlot, QDateTime, QDate, QTime
+from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot, QDateTime, QDate, QTime
 
 import hamster_lib
 from hamster_lib import Fact, HamsterControl, reports, Category, Activity

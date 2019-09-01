@@ -19,7 +19,7 @@
 ############################################################################
 
 import sys
-from PyQt5.QtCore import Qt, QObject, pyqtProperty, pyqtSignal, pyqtSlot, QAbstractTableModel, QModelIndex, QByteArray, QVariant
+from PyQt5.QtCore import Qt, pyqtSlot, QAbstractTableModel, QModelIndex, QByteArray, QVariant
 from PyQt5.QtCore import QTime, QDate
 
 from hamster_lib import Fact
