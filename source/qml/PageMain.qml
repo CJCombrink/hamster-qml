@@ -19,7 +19,7 @@
 ****************************************************************************/
 
 import QtQuick 2.8
-import QtQuick.Controls 2.1
+import QtQuick.Controls 2.5
 import QtQuick.Layouts 1.3
 import QtQuick.Window 2.2
 import QtQuick.Controls.Styles 1.1
@@ -84,49 +84,158 @@ Item {
       title: "Log work"
       Layout.fillWidth: true
 
-      RowLayout {
-        id: rowLayoutActivity
+      ColumnLayout {
         anchors.fill: parent
 
-        TextField {
-          id: textFieldNew
-          placeholderText: "<time> [activity]@<category>, description"
-          validator: RegExpValidator { }
+        RowLayout {
+          id: rowLayoutActivity
           Layout.fillWidth: true
-          focus: true
-          selectByMouse: true
-          Keys.onPressed: {
-            if ((event.key == Qt.Key_Enter) || (event.key == Qt.Key_Return) ){
-              buttonStart.clicked()
-              event.accepted = true;
-            } else if(event.key == Qt.Key_Escape) {
-              textFieldNew.text = ""
-              event.accepted = true;
+
+          TextField {
+            id: textFieldNew
+            placeholderText: "<time> [activity]@<category>, description"
+            validator: RegExpValidator { }
+            Layout.fillWidth: true
+            focus: true
+            selectByMouse: true
+            Keys.onPressed: {
+              if ((event.key == Qt.Key_Enter) || (event.key == Qt.Key_Return) ){
+                buttonStart.clicked()
+                event.accepted = true;
+              } else if(event.key == Qt.Key_Escape) {
+                textFieldNew.text = ""
+                event.accepted = true;
+              }
             }
-          }
-          Component.onCompleted: {
-            /* Build up the final RegExp using logical parts.
+            Component.onCompleted: {
+              /* Build up the final RegExp using logical parts.
                          * This is to allow for better understanding, and will
                          * allow future work to allow custom formats */
-            const reTimeFormat    = '(([01]\\d|2[0-3]):)([0-5]\\d)'
-            const reMaybeTimeSpan =  '((' + reTimeFormat +' )(- (' + reTimeFormat + ') )?)'
-            const reMinutesAgo    = '(-\\d+)'
-            const reActivity      = '[A-Za-z0-9_-]+'
-            const reCategory      = '@[A-Za-z0-9_-]*'
-            const reComment       = ', .+'
-            const reMaybeCategory = '(' + reCategory + ')?'
-            const reMaybeComment  = '(' + reComment + ')?'
-            /* Create the final pattern. */
-            const reFinal         = '^('+ reMaybeTimeSpan + '|' + reMinutesAgo + ' )?' + reActivity + reMaybeCategory + reMaybeComment + '$'
-            validator.regExp      = new RegExp( reFinal )
+              const reTimeFormat    = '(([01]\\d|2[0-3]):)([0-5]\\d)'
+              const reMaybeTimeSpan =  '((' + reTimeFormat +' )(- (' + reTimeFormat + ') )?)'
+              const reMinutesAgo    = '(-\\d+)'
+              const reActivity      = '[A-Za-z0-9_-]+'
+              const reCategory      = '@[A-Za-z0-9_-]*'
+              const reComment       = ', .+'
+              const reMaybeCategory = '(' + reCategory + ')?'
+              const reMaybeComment  = '(' + reComment + ')?'
+              /* Create the final pattern. */
+              const reFinal         = '^('+ reMaybeTimeSpan + '|' + reMinutesAgo + ' )?' + reActivity + reMaybeCategory + reMaybeComment + '$'
+              validator.regExp      = new RegExp( reFinal )
+            }
+          }
+          Button {
+            id: buttonStart
+            text: "Start"
+            enabled: textFieldNew.text ? true: false
+            onClicked: {
+              py.hamster_lib.start(textFieldNew.text)
+            }
           }
         }
-        Button {
-          id: buttonStart
-          text: "Start"
-          enabled: textFieldNew.text ? true: false
-          onClicked: {
-            py.hamster_lib.start(textFieldNew.text)
+
+        RowLayout {
+          id: controlFactNew_
+          Layout.fillWidth: true
+
+          function clear() {
+            textTime_.text              = ""
+            textActivity_.text          = ""
+            comboCategory_.currentIndex = -1
+            textDescription_.text       = ""
+          }
+
+          TextField {
+            id: textTime_
+            placeholderText: "<time>"
+            focus: true
+            selectByMouse: true
+
+            property var _reTimeFormat   : '(([01]\\d|2[0-3]):)([0-5]\\d)'
+            property var _reMaybeTimeSpan:  '((' + _reTimeFormat +')( - (' + _reTimeFormat + '))?)'
+            property var _reMinutesAgo   : '(-\\d+)'
+            property var _regExpTimeSpan : new RegExp('^' + _reTimeFormat + ' - ' + _reTimeFormat + '$')
+
+            validator: RegExpValidator {}
+
+            Keys.onPressed: {
+              if( event.key == Qt.Key_Space) {
+                if( _regExpTimeSpan.test( text ) === true) {
+                  event.accepted = true
+                  textActivity_.focus = true
+                }
+              }
+            }
+            Component.onCompleted: {
+              /* Create the final pattern. */
+              const reFinal         = '^('+ _reMaybeTimeSpan + '|' + _reMinutesAgo + ')?$'
+              validator.regExp      = new RegExp( reFinal )
+            }
+          }
+          TextField {
+            id: textActivity_
+            placeholderText: "[activity]"
+            selectByMouse: true
+            validator: RegExpValidator { regExp: /^[A-Za-z0-9_-]+$/ }
+            Keys.onPressed: {
+              if( event.key == Qt.Key_At) {
+                event.accepted = true
+                comboCategory_.focus = true
+              }
+            }
+          }
+          Label {
+            text: "@"
+          }
+          CustomComboBox {
+            id: comboCategory_
+            editable: py.settings.dynamicCategories
+            currentIndex: -1
+            placeholderText: "<category>"
+            textRole: "name"
+            model: py.category_model
+
+            onCurrentIndexChanged: {
+              /* Clear the text when selecting the (uncategorised) option */
+              if(currentIndex === 0) {
+                currentIndex = -1
+              }
+            }
+
+            validator: RegExpValidator { regExp: /^[A-Za-z0-9_-]*$/ }
+            Keys.onPressed: {
+              if( event.key == Qt.Key_Comma) {
+                event.accepted = true
+                textDescription_.focus = true
+              }
+            }
+          }
+          Label {
+            text: ","
+          }
+          TextField {
+            id: textDescription_
+            Layout.fillWidth: true
+            placeholderText: "description"
+            selectByMouse: true
+            Keys.onPressed: {
+              if ( ( event.key == Qt.Key_Enter ) || ( event.key == Qt.Key_Return ) ){
+                event.accepted = true;
+                _buttonStart2.clicked()
+              } else if( event.key == Qt.Key_Escape ) {
+                event.accepted = true;
+                controlFactNew_.clear()
+              }
+            }
+          }
+          Button {
+            id: _buttonStart2
+            text: "Start"
+            enabled: textTime_.acceptableInput && textActivity_.acceptableInput && comboCategory_.acceptableInput && textDescription_.acceptableInput
+            onClicked: {
+              var fact = textTime_.text +' ' + textActivity_.text + '@' + comboCategory_.editText + ', ' + textDescription_.text
+              py.hamster_lib.start( fact )
+            }
           }
         }
       }
@@ -194,6 +303,7 @@ Item {
     }
     onStartSuccessful: {
       textFieldNew.text = ""
+      controlFactNew_.clear()
     }
     onStopSuccessful: {
       /* For now do nothing. Previously the model was refreshed, but since the model

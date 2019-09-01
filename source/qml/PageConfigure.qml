@@ -42,21 +42,26 @@ Item {
 
       Column {
         CheckBox {
+          id: checkBoxDynamicActivities_
           text: "Dynamic Activities"
+          checked: py.settings.dynamicActivities
           hoverEnabled: true
           ToolTip.delay: 500
           ToolTip.timeout: 5000
           ToolTip.visible: hovered
           ToolTip.text: "Allow activities to be created on the fly. \nIf not enabled, the application will only allow activities that was added previously"
-
+          onCheckedChanged: py.settings.dynamicActivities = checked
         }
         CheckBox {
+          id: checkBoxDynamicCategories_
           text: "Dynamic Categories"
+          checked: py.settings.dynamicCategories
           hoverEnabled: true
           ToolTip.delay: 500
           ToolTip.timeout: 5000
           ToolTip.visible: hovered
           ToolTip.text: "Allow categories to be created on the fly. \nIf not enabled, the application will only allow categories that was added previously"
+          onCheckedChanged: py.settings.dynamicCategories = checked
         }
       }
     }
