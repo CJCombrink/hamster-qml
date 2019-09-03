@@ -20,7 +20,7 @@
 
 import sys
 
-from PyQt5.QtCore    import QObject, pyqtProperty, pyqtSignal, pyqtSlot, Qt
+from PyQt5.QtCore    import QObject, QSettings, pyqtProperty, pyqtSignal, pyqtSlot, Qt
 from PyQt5.QtGui     import QGuiApplication, QIcon, QImage
 from PyQt5.QtWidgets import qApp
 from PyQt5.QtQuick   import QQuickView, QQuickImageProvider
@@ -74,8 +74,9 @@ class Settings( QObject ):
 
   def __init__(self):
       super().__init__()
-      self._dynamicCategories = True
-      self._dynamicActivities = True
+      settings = QSettings()
+      self._dynamicCategories = bool( settings.value( "DynamicCategories", True, type=bool) )
+      self._dynamicActivities = bool( settings.value( "DynamicActivities", True, type=bool ) )
 
   @pyqtProperty(bool, notify=dynamicCategoriesChanged)
   def dynamicCategories(self):
@@ -88,6 +89,7 @@ class Settings( QObject ):
   def dynamicCategories(self, value):
     if self._dynamicCategories != value:
       self._dynamicCategories = value
+      QSettings().setValue( "DynamicCategories", value )
       self.dynamicCategoriesChanged.emit( value )
 
   @pyqtProperty(bool, notify=dynamicActivitiesChanged)
@@ -101,6 +103,7 @@ class Settings( QObject ):
   def dynamicActivities(self, value):
     if self._dynamicActivities != value:
       self._dynamicActivities = value
+      QSettings().setValue( "DynamicActivities", value )
       self.dynamicActivitiesChanged.emit( value )
 
 class Namespace(QObject):
@@ -143,7 +146,16 @@ if __name__ == '__main__':
     # Create main app
     sys.argv += ['--style', 'fusion']
     myApp = QGuiApplication(sys.argv)
+    # Setting the application name and organisation
+    # so that the default constructor of QSettings will
+    # create an INI file on disk
+    qApp.setApplicationName( 'Hamster-QML' )
+    qApp.setApplicationVersion( cVERSION )
+    qApp.setOrganizationName( 'cjc' )
     qApp.setWindowIcon(QIcon('../Resources/Images/hamster-gray_256.png'))
+    # Setting the defaultf format for QSettins to be INI files.
+    # I don't like stuff writing to the Registry on Windows...
+    QSettings.setDefaultFormat( QSettings.IniFormat )
     # Register the Python type. Its URI is 'SortFilterModelPyQt', it's v1.0 and the type
     # will be called 'SortFilterModelPyQt' in QML.
     qmlRegisterType(SortFilterModelPyQt, 'SortFilterModelPyQt', 1, 0, 'SortFilterModelPyQt')
@@ -153,7 +165,7 @@ if __name__ == '__main__':
     context = engine.rootContext()
     # Add the namespace as 'py' in the QML context. If this is done, one can
     # clearly see which objects are accessed from the python side.
-    py =  Namespace()
+    py = Namespace()
     context.setContextProperty('py', py)
     engine.load('qml/main.qml')
     sys.exit(myApp.exec_())
