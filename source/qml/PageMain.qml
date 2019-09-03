@@ -151,6 +151,13 @@ Item {
             focus: true
             selectByMouse: true
 
+            TextMetrics {
+                id: textMetrics_
+                text: "00:00 - 00:00"
+            }
+            // Ensure that the size will fit the TextMetrics
+            Layout.maximumWidth: leftPadding + textMetrics_.advanceWidth + rightPadding
+
             property var _reTimeFormat   : '(([01]\\d|2[0-3]):)([0-5]\\d)'
             property var _reMaybeTimeSpan:  '((' + _reTimeFormat +')( - (' + _reTimeFormat + '))?)'
             property var _reMinutesAgo   : '(-\\d+)'
