@@ -158,6 +158,8 @@ Item {
             // Ensure that the size will fit the TextMetrics
             Layout.maximumWidth: leftPadding + textMetrics_.advanceWidth + rightPadding
 
+            KeyNavigation.tab: rowActCat_.normal? textActivity_: comboCategory_
+
             property var _reTimeFormat   : '(([01]\\d|2[0-3]):)([0-5]\\d)'
             property var _reMaybeTimeSpan:  '((' + _reTimeFormat +')( - (' + _reTimeFormat + '))?)'
             property var _reMinutesAgo   : '(-\\d+)'
@@ -167,8 +169,15 @@ Item {
 
             Keys.onPressed: {
               if( event.key == Qt.Key_Space) {
-                if( _regExpTimeSpan.test( text ) === true) {
+                if( _regExpTimeSpan.test( text ) === true ) {
                   event.accepted = true
+                  textTime_.KeyNavigation.tab.focus = true
+                }
+              } else if ( event.key == Qt.Key_At ) {
+                event.accepted = true
+                if( rowActCat_.normal ) {
+                  comboCategory_.focus = true
+                } else {
                   textActivity_.focus = true
                 }
               }
@@ -179,42 +188,51 @@ Item {
               validator.regExp      = new RegExp( reFinal )
             }
           }
-          TextField {
-            id: textActivity_
-            placeholderText: "[activity]"
-            selectByMouse: true
-            validator: RegExpValidator { regExp: /^[A-Za-z0-9_-]+$/ }
-            Keys.onPressed: {
-              if( event.key == Qt.Key_At) {
-                event.accepted = true
-                comboCategory_.focus = true
-              }
-            }
-          }
-          Label {
-            text: "@"
-          }
-          CustomComboBox {
-            id: comboCategory_
-            editable: py.settings.dynamicCategories
-            currentIndex: -1
-            placeholderText: "<category>"
-            textRole: "name"
-            model: py.category_model
 
-            onCurrentIndexChanged: {
-              /* Clear the text when selecting the (uncategorised) option */
-              if(currentIndex === 0) {
-                currentIndex = -1
-              }
-            }
+          RowLayout {
+            id: rowActCat_
+            property bool normal: py.settings.dynamicActivities || py.settings.dynamicCategories
 
-            validator: RegExpValidator { regExp: /^[A-Za-z0-9_-]*$/ }
-            Keys.onPressed: {
-              if( event.key == Qt.Key_Comma) {
-                event.accepted = true
-                textDescription_.focus = true
+            layoutDirection: normal? Qt.LeftToRight: Qt.RightToLeft
+            TextField {
+              id: textActivity_
+              placeholderText: "[activity]"
+              selectByMouse: true
+              validator: RegExpValidator { regExp: /^[A-Za-z0-9_-]+$/ }
+              Keys.onPressed: {
+                if( event.key == Qt.Key_At) {
+                  event.accepted = true
+                  comboCategory_.focus = true
+                }
               }
+              KeyNavigation.tab: rowActCat_.normal? comboCategory_: textDescription_
+            }
+            Label {
+              text: "@"
+            }
+            CustomComboBox {
+              id: comboCategory_
+              editable: py.settings.dynamicCategories
+              currentIndex: -1
+              placeholderText: "<category>"
+              textRole: "name"
+              model: py.category_model
+
+              onCurrentIndexChanged: {
+                /* Clear the text when selecting the (uncategorised) option */
+                if(currentIndex === 0) {
+                  currentIndex = -1
+                }
+              }
+
+              validator: RegExpValidator { regExp: /^[A-Za-z0-9_-]*$/ }
+              Keys.onPressed: {
+                if( event.key == Qt.Key_Comma) {
+                  event.accepted = true
+                  textDescription_.focus = true
+                }
+              }
+              KeyNavigation.tab: rowActCat_.normal? textDescription_: textActivity_
             }
           }
           Label {
