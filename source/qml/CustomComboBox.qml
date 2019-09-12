@@ -17,6 +17,7 @@ import QtQuick.Controls.Fusion.impl 2.12
 ComboBox {
   id: root_
   property alias placeholderText:  text_.placeholderText
+  property alias selectByMouse: text_.selectByMouse
 
   contentItem: TextField {
     id: text_
