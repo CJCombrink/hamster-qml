@@ -140,7 +140,7 @@ Item {
 
           function clear() {
             textTime_.text              = ""
-            textActivity_.text          = ""
+            comboActivity_.currentIndex = -1
             comboCategory_.currentIndex = -1
             textDescription_.text       = ""
           }
@@ -152,13 +152,11 @@ Item {
             selectByMouse: true
 
             TextMetrics {
-                id: textMetrics_
-                text: "00:00 - 00:00"
+              id: textMetrics_
+              text: "00:00 - 00:00"
             }
             // Ensure that the size will fit the TextMetrics
             Layout.maximumWidth: leftPadding + textMetrics_.advanceWidth + rightPadding
-
-            KeyNavigation.tab: rowActCat_.normal? textActivity_: comboCategory_
 
             property var _reTimeFormat   : '(([01]\\d|2[0-3]):)([0-5]\\d)'
             property var _reMaybeTimeSpan:  '((' + _reTimeFormat +')( - (' + _reTimeFormat + '))?)'
@@ -171,14 +169,7 @@ Item {
               if( event.key == Qt.Key_Space) {
                 if( _regExpTimeSpan.test( text ) === true ) {
                   event.accepted = true
-                  textTime_.KeyNavigation.tab.focus = true
-                }
-              } else if ( event.key == Qt.Key_At ) {
-                event.accepted = true
-                if( rowActCat_.normal ) {
                   comboCategory_.focus = true
-                } else {
-                  textActivity_.focus = true
                 }
               }
             }
@@ -189,50 +180,44 @@ Item {
             }
           }
 
-          RowLayout {
-            id: rowActCat_
-            property bool normal: py.settings.dynamicActivities || py.settings.dynamicCategories
-
-            layoutDirection: normal? Qt.LeftToRight: Qt.RightToLeft
-            TextField {
-              id: textActivity_
-              placeholderText: "[activity]"
-              selectByMouse: true
-              validator: RegExpValidator { regExp: /^[A-Za-z0-9_-]+$/ }
-              Keys.onPressed: {
-                if( event.key == Qt.Key_At) {
-                  event.accepted = true
-                  comboCategory_.focus = true
-                }
+          CustomComboBox {
+            id: comboCategory_
+            editable: py.settings.dynamicCategories
+            currentIndex: -1
+            placeholderText: "<category>"
+            selectByMouse: true
+            validator: RegExpValidator { regExp: /^[A-Za-z0-9_-]*$/ }
+            textRole: "name"
+            model: py.category_model
+            onCurrentIndexChanged: {
+              /* Clear the text when selecting the (uncategorised) option */
+              if(currentIndex === 0) {
+                currentIndex = -1
               }
-              KeyNavigation.tab: rowActCat_.normal? comboCategory_: textDescription_
             }
-            Label {
-              text: "@"
+            Keys.onPressed: {
+              if( event.key == Qt.Key_At) {
+                event.accepted = true
+                comboActivity_.focus = true
+              }
             }
-            CustomComboBox {
-              id: comboCategory_
-              editable: py.settings.dynamicCategories
-              currentIndex: -1
-              placeholderText: "<category>"
-              textRole: "name"
-              model: py.category_model
-
-              onCurrentIndexChanged: {
-                /* Clear the text when selecting the (uncategorised) option */
-                if(currentIndex === 0) {
-                  currentIndex = -1
-                }
+          }
+          Label {
+            text: "@"
+          }
+          CustomComboBox {
+            id: comboActivity_
+            editable: py.settings.dynamicActivities
+            currentIndex: -1
+            placeholderText: "[activity]"
+            selectByMouse: true
+            validator: RegExpValidator { regExp: /^[A-Za-z0-9_-]+$/ }
+            model: py.category_model.activitiesList(comboCategory_.currentText)
+            Keys.onPressed: {
+              if( event.key == Qt.Key_Comma) {
+                event.accepted = true
+                textDescription_.focus = true
               }
-
-              validator: RegExpValidator { regExp: /^[A-Za-z0-9_-]*$/ }
-              Keys.onPressed: {
-                if( event.key == Qt.Key_Comma) {
-                  event.accepted = true
-                  textDescription_.focus = true
-                }
-              }
-              KeyNavigation.tab: rowActCat_.normal? textDescription_: textActivity_
             }
           }
           Label {
@@ -253,12 +238,16 @@ Item {
               }
             }
           }
+
           Button {
             id: _buttonStart2
             text: "Start"
-            enabled: textTime_.acceptableInput && textActivity_.acceptableInput && comboCategory_.acceptableInput && textDescription_.acceptableInput
+            enabled: textTime_.acceptableInput
+                     && ( comboActivity_.editText !== "" )
+                     && comboCategory_.acceptableInput
+                     && textDescription_.acceptableInput
             onClicked: {
-              var fact = textTime_.text +' ' + textActivity_.text + '@' + comboCategory_.editText + ', ' + textDescription_.text
+              var fact = textTime_.text +' ' + comboActivity_.editText + '@' + comboCategory_.editText + ', ' + textDescription_.text
               py.hamster_lib.start( fact )
             }
           }
