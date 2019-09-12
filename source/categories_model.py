@@ -44,7 +44,7 @@ class HqCategoriesModel(QStandardItemModel):
     def __init__(self, hamster):
         super(HqCategoriesModel, self).__init__()
         self._hamster      = hamster
-        self._categories        = []
+        self._categories   = []
         self._totals       = {} # Day totals maintained in the model. When the model is refreshed this
                                 # list is refreshed. When new facts are added or exising ones updated,
                                 # the totals are updated accordingly.
@@ -70,11 +70,28 @@ class HqCategoriesModel(QStandardItemModel):
         parent = self.invisibleRootItem()
         parent.removeRows(0, parent.rowCount() )
         for cat in self._categories.values():
-            item = QStandardItem(cat.name() )
+            item = QStandardItem( cat.name() )
             parent.appendRow( [ item, QStandardItem( str(cat.key()) ), QStandardItem( "Category" ) ] )
             for act in cat.activities():
                 item.appendRow( [ QStandardItem( act.name() ), QStandardItem( str(act.key()) ), QStandardItem( "Activity" ) ] )
         self.endResetModel()
+
+    @pyqtSlot(str,result=QVariant)
+    def activitiesList(self, category):
+      """
+      Get the list of activities for the given category. The
+      first item in the list will (for now) always be an empty string.
+      """
+      list = ['']
+      cat = self._categories[ None ]
+      if category is not '':
+        for tmpCategory in self._categories.values():
+          if tmpCategory.name() == category:
+            cat = tmpCategory
+            break
+      for act in cat.activities():
+        list.append( act.name() )
+      return list
 
     def roleNames(self):
         return self._roles
