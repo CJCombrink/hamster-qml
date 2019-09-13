@@ -94,3 +94,5 @@ ENV/
 
 # QtCreator project settings
 *.pyproject*
+
+*.sqlite
