@@ -18,6 +18,22 @@ ComboBox {
   id: root_
   property alias placeholderText:  text_.placeholderText
   property alias selectByMouse: text_.selectByMouse
+  property bool showAcceptable: false
+
+  /* Interesting way to overlay an item on top of the
+   * text field to allow changing the border color without
+   * the need to change the contentItem since the TextField
+   * does not have a boder color. */
+  Rectangle {
+    id: placeholder
+    x: text_.left
+    y: text_.top
+    width: text_.width
+    height: text_.height
+    parent: root_.contentItem
+    color: 'transparent'
+    border.color: (!text_.acceptableInput && showAcceptable)? 'red': 'transparent'
+  }
 
   contentItem: TextField {
     id: text_

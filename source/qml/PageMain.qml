@@ -140,9 +140,7 @@ Item {
 
           function clear() {
             textTime_.text              = ""
-            comboActivity_.currentIndex = -1
-            comboCategory_.currentIndex = -1
-            textDescription_.text       = ""
+            factEditor_.clear()
           }
 
           TextField {
@@ -180,78 +178,25 @@ Item {
             }
           }
 
-          CustomComboBox {
-            id: comboCategory_
-            editable: py.settings.dynamicCategories
-            currentIndex: -1
-            placeholderText: "<category>"
-            selectByMouse: true
-            validator: RegExpValidator { regExp: /^[A-Za-z0-9_-]*$/ }
-            textRole: "name"
-            model: py.category_model
-            onCurrentIndexChanged: {
-              /* Clear the text when selecting the (uncategorised) option */
-              if(currentIndex === 0) {
-                currentIndex = -1
-              }
-            }
-            Keys.onPressed: {
-              if( event.key == Qt.Key_At) {
-                event.accepted = true
-                comboActivity_.focus = true
-              }
-            }
-          }
-          Label {
-            text: "@"
-          }
-          CustomComboBox {
-            id: comboActivity_
-            editable: py.settings.dynamicActivities
-            currentIndex: -1
-            placeholderText: "[activity]"
-            selectByMouse: true
-            validator: RegExpValidator { regExp: /^[A-Za-z0-9_-]+$/ }
-            model: py.category_model.activitiesList(comboCategory_.currentText)
-            Keys.onPressed: {
-              if( event.key == Qt.Key_Comma) {
-                event.accepted = true
-                textDescription_.focus = true
-              }
-            }
-          }
-          Label {
-            text: ","
-          }
-          TextField {
-            id: textDescription_
+          FactEditor {
+            id: factEditor_
             Layout.fillWidth: true
-            placeholderText: "description"
-            selectByMouse: true
-            Keys.onPressed: {
-              if ( ( event.key == Qt.Key_Enter ) || ( event.key == Qt.Key_Return ) ){
-                event.accepted = true;
-                _buttonStart2.clicked()
-              } else if( event.key == Qt.Key_Escape ) {
-                event.accepted = true;
-                controlFactNew_.clear()
-              }
-            }
+            onClearRequested: controlFactNew_.clear()
+            onAccepted: _buttonStart2.clicked()
           }
 
           Button {
             id: _buttonStart2
             text: "Start"
             enabled: textTime_.acceptableInput
-                     && ( comboActivity_.editText !== "" )
-                     && comboCategory_.acceptableInput
-                     && textDescription_.acceptableInput
+                     && factEditor_.valid
             onClicked: {
-              var fact = textTime_.text +' ' + comboActivity_.editText + '@' + comboCategory_.editText + ', ' + textDescription_.text
+              var fact = textTime_.text +' ' + factEditor_.factInfo
               py.hamster_lib.start( fact )
             }
           }
         }
+
       }
     }
 
