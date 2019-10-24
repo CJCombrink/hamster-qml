@@ -24,7 +24,7 @@ import QtQuick.Layouts 1.3
 import QtQuick.Window 2.2
 
 Window {
-    id: mypopDialog
+    id: root_
     title        : "Update Fact"
     width        : mainLayout.implicitWidth + 2 * margin
     height       : mainLayout.implicitHeight + 2 * margin
@@ -67,7 +67,6 @@ Window {
             id: groupBoxCurrent
             Layout.fillWidth: true
             RowLayout {
-                id: currentRowLayout
                 anchors.fill: parent
                 ColumnLayout {
                     Label  {
@@ -87,48 +86,28 @@ Window {
                         dateTime: end
                     }
                 }
-                ColumnLayout {
-                    Label  {
-                        text: "Activity"
-                    }
-                    TextField {
-                        id: textFieldActivity
-                        text: activity
-                        selectByMouse: true
-                    }
-                }
-                ColumnLayout {
-                    Label  {
-                        text: "Category"
-                    }
-                    TextField {
-                        id: textFieldCategory
-                        text: category? category : ""
-                        selectByMouse: true
-                    }
-                }
-                ColumnLayout {
-                    Layout.fillWidth: true
-                    Label  {
-                        text: "Description"
-                        Layout.fillWidth: true
-                    }
-                    TextField {
-                        id: textFieldDescription
-                        text: description? description : ""
-                        Layout.fillWidth: true
-                        selectByMouse: true
-                    }
+                FactEditor {
+                  id: factEditor_
+                  Layout.fillWidth: true
+                  simple: false
+                  Component.onCompleted: {
+                    factEditor_.setCategory( root_.category )
+                    factEditor_.setActivity( root_.activity )
+                    factEditor_.description = root_.description
+                  }
                 }
                 ColumnLayout {
                     Label  {
                         text: "Duration"
-                        width: 30
                     }
                     TextField {
                         id: textFieldDuration
                         readOnly: true
-                        width   : 30
+                        implicitWidth: leftPadding + textMetrics_.advanceWidth + rightPadding
+                        TextMetrics {
+                          id: textMetrics_
+                          text: "HH:MM"
+                        }
                     }
 
                     Component.onCompleted: {
@@ -151,25 +130,26 @@ Window {
 
             RowLayout {
                 id: buttonsRowLayout
-                //anchors.fill: parent
                 Button {
                     text: "Ok"
-                    enabled: (timeEditStart.busyEditing == false) && (timeEditEnd.busyEditing == false) && (textFieldActivity.text != "")
+                    enabled: (timeEditStart.busyEditing == false)
+                             && (timeEditEnd.busyEditing == false)
+                             && (factEditor_.valid == true)
                     onClicked: {
-                        mypopDialog.accepted(key
+                        root_.accepted(key
                                              , timeEditStart.dateTime
                                              , timeEditEnd.dateTime
-                                             , textFieldCategory.text
-                                             , textFieldActivity.text
-                                             , textFieldDescription.text)
-                        mypopDialog.close();
+                                             , factEditor_.category
+                                             , factEditor_.activity
+                                             , factEditor_.description)
+                        root_.close();
                     }
                 }
 
                 Button {
                     text: "Cancel"
                     onClicked: {
-                        mypopDialog.close();
+                        root_.close();
                     }
                 }
 
