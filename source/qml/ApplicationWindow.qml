@@ -86,7 +86,6 @@ ApplicationWindow {
           anchors.fill: parent
         }
       }
-
     }
   }
 }

@@ -19,7 +19,7 @@
 ############################################################################
 
 import sys
-from PySide2.QtCore import Qt, QObject, QSortFilterProxyModel, QDate, QModelIndex, QVariant, QAbstractItemModel
+from PySide2.QtCore import Qt, QObject, QSortFilterProxyModel, QDate, QModelIndex, QAbstractItemModel
 from PySide2.QtCore import Property, Signal, Slot
 
 class SortFilterModelPyQt(QSortFilterProxyModel):
@@ -28,7 +28,7 @@ class SortFilterModelPyQt(QSortFilterProxyModel):
     startDateChanged = Signal(QDate, name='startDateChanged', arguments=['startDate'])
     endDateChanged   = Signal(QDate, name='endDateChanged', arguments=['endDate'])
 
-    def __init__(self, hamster):
+    def __init__(self):
         super(SortFilterModelPyQt, self).__init__()
         self._startDate = QDate()
         self._endDate   = QDate()
@@ -46,7 +46,7 @@ class SortFilterModelPyQt(QSortFilterProxyModel):
         return super(SortFilterModelPyQt, self).sourceModel()
 
     @sourceModel.setter
-    def sourceModel(self, model):
+    def set_sourceModel(self, model):
         super(SortFilterModelPyQt, self).setSourceModel(model)
 
     @Property(QDate, notify=startDateChanged)
@@ -54,7 +54,7 @@ class SortFilterModelPyQt(QSortFilterProxyModel):
         return self._startDate
 
     @startDate.setter
-    def startDate(self, startDate):
+    def set_startDate(self, startDate):
         if startDate != self._startDate:
             self._startDate = startDate
             self.startDateChanged.emit(startDate)
@@ -64,7 +64,7 @@ class SortFilterModelPyQt(QSortFilterProxyModel):
         return self._endDate
 
     @endDate.setter
-    def endDate(self, endDate):
+    def set_endDate(self, endDate):
         if endDate != self._endDate:
             self._endDate = endDate
             self.endDateChanged.emit(endDate)
@@ -95,7 +95,7 @@ class SortFilterModelPyQt(QSortFilterProxyModel):
                   self.sort(0, Qt.AscendingOrder )
 
 
-    @Slot(int, result='QVariant')
+    @Slot(int, result=dict)
     def get(self, row):
         dictionary  = dict(self.roleNames())
         headers = {}

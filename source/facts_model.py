@@ -19,7 +19,7 @@
 ############################################################################
 
 import sys
-from PySide2.QtCore import Qt, Slot, QAbstractTableModel, QModelIndex, QByteArray, QVariant
+from PySide2.QtCore import Qt, Slot, QAbstractTableModel, QModelIndex, QByteArray
 from PySide2.QtCore import QTime, QDate
 
 from hamster_lib import Fact
@@ -29,14 +29,14 @@ from hamster_pyqt import FactPyQt
 
 class FactModelPyQt(QAbstractTableModel):
     """ Fact Model """
-    COLUMNS = ('key'        ,
-               'start'      ,
-               'end'        ,
-               'activity'   ,
-               'category'   ,
-               'description',
-               'duration'   ,
-               'day'        )
+    COLUMNS = (b'key'        ,
+               b'start'      ,
+               b'end'        ,
+               b'activity'   ,
+               b'category'   ,
+               b'description',
+               b'duration'   ,
+               b'day'        )
 
     def __init__(self, hamster):
         super(FactModelPyQt, self).__init__()
@@ -142,7 +142,7 @@ class FactModelPyQt(QAbstractTableModel):
     def roleNames(self):
         return self._roles
 
-    @Slot(QDate, result='QVariant')
+    @Slot(QDate, result=QTime)
     def getDayTotal(self, day):
         """ Get the total time for the specified day.
 
@@ -153,7 +153,7 @@ class FactModelPyQt(QAbstractTableModel):
           duration = self._totals[ day ]
         return duration;
 
-    @Slot(int, result='QVariant')
+    @Slot(int, result=dict)
     def get(self, row):
         headers = {}
         tmpFact = self._facts[row]
@@ -165,4 +165,4 @@ class FactModelPyQt(QAbstractTableModel):
         headers['description'] = tmpFact.description()
         headers['duration'   ] = tmpFact.duration()
         headers['day'        ] = tmpFact.day()
-        return QVariant(headers)
+        return headers

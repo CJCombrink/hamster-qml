@@ -75,8 +75,8 @@ class Settings( QObject ):
   def __init__(self):
       super().__init__()
       settings = QSettings()
-      self._dynamicCategories = bool( settings.value( "DynamicCategories", True, type=bool) )
-      self._dynamicActivities = bool( settings.value( "DynamicActivities", True, type=bool ) )
+      self._dynamicCategories = bool( settings.value( "DynamicCategories", True ) )
+      self._dynamicActivities = bool( settings.value( "DynamicActivities", True ) )
 
   @Property(bool, notify=dynamicCategoriesChanged)
   def dynamicCategories(self):
@@ -86,7 +86,7 @@ class Settings( QObject ):
     return self._dynamicCategories
 
   @dynamicCategories.setter
-  def dynamicCategories(self, value):
+  def set_dynamicCategories(self, value):
     if self._dynamicCategories != value:
       self._dynamicCategories = value
       QSettings().setValue( "DynamicCategories", value )
@@ -100,7 +100,7 @@ class Settings( QObject ):
     return self._dynamicActivities
 
   @dynamicActivities.setter
-  def dynamicActivities(self, value):
+  def set_dynamicActivities(self, value):
     if self._dynamicActivities != value:
       self._dynamicActivities = value
       QSettings().setValue( "DynamicActivities", value )

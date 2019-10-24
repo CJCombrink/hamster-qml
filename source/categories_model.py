@@ -19,7 +19,7 @@
 ############################################################################
 
 import sys
-from PySide2.QtCore import Qt, Slot, QModelIndex, QByteArray, QVariant
+from PySide2.QtCore import Qt, Slot, QModelIndex, QByteArray
 from PySide2.QtGui  import QStandardItemModel, QStandardItem
 
 from hamster_lib import Fact
@@ -37,9 +37,9 @@ class HqCategoriesModel(QStandardItemModel):
     Use the canRemove() function to check if the removeItem() function will
     remove the item.
     """
-    COLUMNS = ('name'       ,
-               'key'        ,
-               'type'       )
+    COLUMNS = (b'name'       ,
+               b'key'        ,
+               b'type'       )
 
     def __init__(self, hamster):
         super(HqCategoriesModel, self).__init__()
@@ -76,7 +76,7 @@ class HqCategoriesModel(QStandardItemModel):
                 item.appendRow( [ QStandardItem( act.name() ), QStandardItem( str(act.key()) ), QStandardItem( "Activity" ) ] )
         self.endResetModel()
 
-    @Slot(str,result=QVariant)
+    @Slot(str,result=list)
     def activitiesList(self, category):
       """
       Get the list of activities for the given category. The
