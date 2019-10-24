@@ -35,8 +35,8 @@ Item {
     //    TableViewColumn { role: "key"        ;  title: "Key"        ; width: 35  }
         TableViewColumn { id: colStart; role: "start"      ;  title: "Start"      ; width: 50;  delegate: timeDelegate; resizable: false}
         TableViewColumn { id: colEnd  ; role: "end"        ;  title: "End"        ; width: 50;  delegate: timeDelegate; resizable: false}
-        TableViewColumn { id: colAct  ; role: "activity"   ;  title: "Activity"   ; width: 70 }
         TableViewColumn { id: colCat  ; role: "category"   ;  title: "Category"   ; width: 70 }
+        TableViewColumn { id: colAct  ; role: "activity"   ;  title: "Activity"   ; width: 70 }
         TableViewColumn { id: colDesc ; role: "description";  title: "Description"; width: factView.viewport.width - colStart.width - colEnd.width - colAct.width - colCat.width - colDur.width; resizable: false }
         TableViewColumn { id: colDur  ; role: "duration"   ;  title: "Duration"   ; width: 55;   delegate: timeDelegate; resizable: false }
 
