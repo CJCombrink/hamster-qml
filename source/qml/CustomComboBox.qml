@@ -32,7 +32,7 @@ ComboBox {
     height: text_.height
     parent: root_.contentItem
     color: 'transparent'
-    border.color: (!text_.acceptableInput && showAcceptable)? 'red': 'transparent'
+    border.color: (!text_.acceptableInput && showAcceptable)? '#80ff0000': 'transparent'
   }
 
   contentItem: TextField {
