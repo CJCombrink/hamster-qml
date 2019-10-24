@@ -47,8 +47,8 @@ import QtQuick.Controls 2.1
 
 Item {
     id : topItem
-    width : tf.width
-    height: tf.height
+    implicitWidth: tf.implicitWidth
+    implicitHeight: tf.implicitHeight
 
     property date dateTime
     property bool busyEditing: false
@@ -56,12 +56,18 @@ Item {
 
     TextField {
         id: tf
-        width           : 60
         placeholderText : "HH:MM"
         validator       : RegExpValidator { regExp: /^(?:(?:([01]?\d|2[0-3]):)([0-5]\d))$/ }
         selectByMouse   : true
         //inputMethodHints: Qt.ImhTime  //<- does not seem to work
         //inputMethodHints: Qt.ImhNoPredictiveText
+
+        TextMetrics {
+          id: textMetrics_
+          text: "HH:MM"
+        }
+        // Ensure that the size will fit the TextMetrics
+        implicitWidth: leftPadding + textMetrics_.advanceWidth + rightPadding
 
         // Slot called when the text is accepted. This will only be called
         // if the text has the correct format from the validator.
