@@ -88,53 +88,6 @@ Item {
         anchors.fill: parent
 
         RowLayout {
-          id: rowLayoutActivity
-          Layout.fillWidth: true
-
-          TextField {
-            id: textFieldNew
-            placeholderText: "<time> [activity]@<category>, description"
-            validator: RegExpValidator { }
-            Layout.fillWidth: true
-            focus: true
-            selectByMouse: true
-            Keys.onPressed: {
-              if ((event.key == Qt.Key_Enter) || (event.key == Qt.Key_Return) ){
-                buttonStart.clicked()
-                event.accepted = true;
-              } else if(event.key == Qt.Key_Escape) {
-                textFieldNew.text = ""
-                event.accepted = true;
-              }
-            }
-            Component.onCompleted: {
-              /* Build up the final RegExp using logical parts.
-                         * This is to allow for better understanding, and will
-                         * allow future work to allow custom formats */
-              const reTimeFormat    = '(([01]\\d|2[0-3]):)([0-5]\\d)'
-              const reMaybeTimeSpan =  '((' + reTimeFormat +' )(- (' + reTimeFormat + ') )?)'
-              const reMinutesAgo    = '(-\\d+)'
-              const reActivity      = '[A-Za-z0-9_-]+'
-              const reCategory      = '@[A-Za-z0-9_-]*'
-              const reComment       = ', .+'
-              const reMaybeCategory = '(' + reCategory + ')?'
-              const reMaybeComment  = '(' + reComment + ')?'
-              /* Create the final pattern. */
-              const reFinal         = '^('+ reMaybeTimeSpan + '|' + reMinutesAgo + ' )?' + reActivity + reMaybeCategory + reMaybeComment + '$'
-              validator.regExp      = new RegExp( reFinal )
-            }
-          }
-          Button {
-            id: buttonStart
-            text: "Start"
-            enabled: textFieldNew.text ? true: false
-            onClicked: {
-              py.hamster_lib.start(textFieldNew.text)
-            }
-          }
-        }
-
-        RowLayout {
           id: controlFactNew_
           Layout.fillWidth: true
 
