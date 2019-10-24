@@ -53,99 +53,99 @@ Item {
     anchors.fill: parent
 
     ColumnLayout {
-        Label  {
-            text: "Category"
-            visible: !simple
-        }
-        CustomComboBox {
-          id: comboCategory_
-          editable: py.settings.dynamicCategories
-          currentIndex: -1
-          placeholderText: "<category>"
-          selectByMouse: true
-          validator: RegExpValidator { regExp: /^[A-Za-z0-9_-]*$/ }
-          textRole: "name"
-          model: py.category_model
-          onCurrentIndexChanged: {
-            /* Clear the text when selecting the (uncategorised) option */
-            if(currentIndex === 0) {
-              currentIndex = -1
-            }
-          }
-          Keys.onPressed: {
-            if( event.key == Qt.Key_At) {
-              event.accepted = true
-              comboActivity_.focus = true
-            }
+      Label  {
+        text: "Category"
+        visible: !simple
+      }
+      CustomComboBox {
+        id: comboCategory_
+        editable: py.settings.dynamicCategories
+        currentIndex: -1
+        placeholderText: "<category>"
+        selectByMouse: true
+        validator: RegExpValidator { regExp: /^[A-Za-z0-9_-]*$/ }
+        textRole: "name"
+        model: py.category_model
+        onCurrentIndexChanged: {
+          /* Clear the text when selecting the (uncategorised) option */
+          if(currentIndex === 0) {
+            currentIndex = -1
           }
         }
-    }
-    ColumnLayout {
-        Label  {
-            // Empty padding string to push the @ down when the
-            // Editor is not simple.
-            text: ""
-            visible: !simple
-        }
-        Label {
-          text: "@"
-        }
-    }
-    ColumnLayout {
-        Label  {
-            text: "Activity"
-            visible: !simple
-        }
-        CustomComboBox {
-          id: comboActivity_
-          editable: py.settings.dynamicActivities
-          currentIndex: -1
-          placeholderText: "[activity]"
-          selectByMouse: true
-          validator: RegExpValidator { regExp: /^[A-Za-z0-9_-]+$/ }
-          model: py.category_model.activitiesList(comboCategory_.currentText, true)
-          showAcceptable: comboCategory_.editText != ""
-          Keys.onPressed: {
-            if( event.key == Qt.Key_Comma) {
-              event.accepted = true
-              textDescription_.focus = true
-            }
+        Keys.onPressed: {
+          if( event.key == Qt.Key_At) {
+            event.accepted = true
+            comboActivity_.focus = true
           }
         }
+      }
     }
     ColumnLayout {
-        Label  {
-            // Empty padding string to push the comma down when the
-            // Editor is not simple.
-            text: ""
-            visible: !simple
-        }
-        Label {
-          text: ","
-        }
+      Label  {
+        // Empty padding string to push the @ down when the
+        // Editor is not simple.
+        text: ""
+        visible: !simple
+      }
+      Label {
+        text: "@"
+      }
     }
     ColumnLayout {
+      Label  {
+        text: "Activity"
+        visible: !simple
+      }
+      CustomComboBox {
+        id: comboActivity_
+        editable: py.settings.dynamicActivities
+        currentIndex: -1
+        placeholderText: "[activity]"
+        selectByMouse: true
+        validator: RegExpValidator { regExp: /^[A-Za-z0-9_-]+$/ }
+        model: py.category_model.activitiesList(comboCategory_.currentText, true)
+        showAcceptable: comboCategory_.editText != ""
+        Keys.onPressed: {
+          if( event.key == Qt.Key_Comma) {
+            event.accepted = true
+            textDescription_.focus = true
+          }
+        }
+      }
+    }
+    ColumnLayout {
+      Label  {
+        // Empty padding string to push the comma down when the
+        // Editor is not simple.
+        text: ""
+        visible: !simple
+      }
+      Label {
+        text: ","
+      }
+    }
+    ColumnLayout {
+      Layout.fillWidth: true
+      Label  {
+        text: "Description"
         Layout.fillWidth: true
-        Label  {
-            text: "Description"
-            Layout.fillWidth: true
-            visible: !simple
-        }
-        TextField {
-          id: textDescription_
-          Layout.fillWidth: true
-          placeholderText: "description"
-          selectByMouse: true
-          Keys.onPressed: {
-            if ( ( event.key == Qt.Key_Enter ) || ( event.key == Qt.Key_Return ) ){
-              event.accepted = true;
-              root_.accepted()
-            } else if( event.key == Qt.Key_Escape ) {
-              event.accepted = true;
-              root_.clearRequested()
-            }
+        visible: !simple
+      }
+      TextField {
+        id: textDescription_
+        Layout.fillWidth: true
+        placeholderText: "description"
+        selectByMouse: true
+        Keys.onPressed: {
+          if ( ( event.key == Qt.Key_Enter ) || ( event.key == Qt.Key_Return ) ){
+            event.accepted = true;
+            root_.accepted()
+          } else if( event.key == Qt.Key_Escape ) {
+            event.accepted = true;
+            root_.clearRequested()
           }
         }
+      }
     }
   }
 }

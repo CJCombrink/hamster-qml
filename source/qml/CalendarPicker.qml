@@ -25,131 +25,131 @@ import QtQuick.Window 2.2
 import Qt.labs.calendar 1.0
 
 Item {
-    id: calendarPicker
+  id: calendarPicker
 
-    width : childrenRect.width
-    height: childrenRect.height
+  width : childrenRect.width
+  height: childrenRect.height
 
-    signal dateSelected(date selectedDate)
-    property date currentDate: new Date()
+  signal dateSelected(date selectedDate)
+  property date currentDate: new Date()
 
-    QtObject {
-        id: d
-        property date internalDate: currentDate
-        property bool doubleClickValid: false
+  QtObject {
+    id: d
+    property date internalDate: currentDate
+    property bool doubleClickValid: false
 
-        function addMonths(monthsToAdd) {
-            var updatedDateTime = new Date( internalDate )
-            /* Set the day to 1 to make sure that if the month is
-             * increased or decreased and the next or previous month does
-             * not contain the day it does not skip to the next month.
-             * For example without this, if the current date is
-             * 30 Jan, going to the next will go to 30 Feb, which is not
-             * a valid date, thus it would jump to march. This update
-             * fixes that issue.
-             * Alternatively once can test for this case, but this is easy
-             * enough and doing the correct thing. */
-            updatedDateTime.setDate(1)
-            updatedDateTime.setMonth( updatedDateTime.getMonth() + monthsToAdd )
-            internalDate = updatedDateTime
-        }
+    function addMonths(monthsToAdd) {
+      var updatedDateTime = new Date( internalDate )
+      /* Set the day to 1 to make sure that if the month is
+       * increased or decreased and the next or previous month does
+       * not contain the day it does not skip to the next month.
+       * For example without this, if the current date is
+       * 30 Jan, going to the next will go to 30 Feb, which is not
+       * a valid date, thus it would jump to march. This update
+       * fixes that issue.
+       * Alternatively once can test for this case, but this is easy
+       * enough and doing the correct thing. */
+      updatedDateTime.setDate(1)
+      updatedDateTime.setMonth( updatedDateTime.getMonth() + monthsToAdd )
+      internalDate = updatedDateTime
+    }
+  }
+
+
+  Timer {
+    id: doubleClickTimer
+    interval: 500
+    onTriggered: {
+      stop()
+      d.doubleClickValid = false
+    }
+  }
+
+  ColumnLayout {
+    RowLayout {
+      Button {
+        text: '<'
+        width: 10
+        flat: true
+        onClicked: d.addMonths(-1)
+      }
+      Text {
+        Layout.fillWidth: true
+        text: Qt.formatDate(d.internalDate, "MMMM (yyyy)")
+      }
+      Button {
+        text: '>'
+        width: 10
+        flat: true
+        onClicked: d.addMonths(1)
+      }
     }
 
+    GridLayout {
+      id: calLayout
 
-    Timer {
-        id: doubleClickTimer
-        interval: 500
-        onTriggered: {
-            stop()
-            d.doubleClickValid = false
+      DayOfWeekRow {
+        id: dowRow
+        locale       : monthGrid.locale
+        Layout.row   : 0
+        Layout.column: 1
+        Layout.fillWidth : true
+      }
+
+      WeekNumberColumn {
+        month: monthGrid.month
+        year : monthGrid.year
+        locale: monthGrid.locale
+        Layout.row   : 1
+        Layout.column: 0
+        Layout.fillHeight: true
+      }
+
+      MonthGrid {
+        id: monthGrid
+        month: d.internalDate.getMonth()
+        year : d.internalDate.getFullYear()
+        locale: Qt.locale("en_ZA")
+        Layout.row   : 1
+        Layout.column: 1
+        Layout.fillHeight: true
+        Layout.fillWidth : true
+        delegate: Text {
+          horizontalAlignment: Text.AlignHCenter
+          verticalAlignment: Text.AlignVCenter
+          opacity: model.month === monthGrid.month ? 1 : 0.5
+          text   : model.day
+          color  : getDayColor()
+
+          function getDayColor() {
+            if((model.day === currentDate.getDate()) && (model.month === currentDate.getMonth())) {
+              return 'blue'
+            }
+            if((model.day === d.internalDate.getDate()) && (model.month === d.internalDate.getMonth())) {
+              return 'skyblue'
+            }
+            if(model.today === true) {
+              return 'steelblue'
+            }
+
+            return 'black'
+          }
         }
-    }
 
-    ColumnLayout {
-        RowLayout {
-            Button {
-                text: '<'
-                width: 10
-                flat: true
-                onClicked: d.addMonths(-1)
-            }
-            Text {
-                Layout.fillWidth: true
-                text: Qt.formatDate(d.internalDate, "MMMM (yyyy)")
-            }
-            Button {
-                text: '>'
-                width: 10
-                flat: true
-                onClicked: d.addMonths(1)
-            }
-        }
+        onClicked: {
+          d.internalDate = date
 
-        GridLayout {
-            id: calLayout
-
-            DayOfWeekRow {
-                id: dowRow
-                locale       : monthGrid.locale
-                Layout.row   : 0
-                Layout.column: 1
-                Layout.fillWidth : true
-            }
-
-            WeekNumberColumn {
-                month: monthGrid.month
-                year : monthGrid.year
-                locale: monthGrid.locale
-                Layout.row   : 1
-                Layout.column: 0
-                Layout.fillHeight: true
-            }
-
-            MonthGrid {
-                id: monthGrid
-                month: d.internalDate.getMonth()
-                year : d.internalDate.getFullYear()
-                locale: Qt.locale("en_ZA")
-                Layout.row   : 1
-                Layout.column: 1
-                Layout.fillHeight: true
-                Layout.fillWidth : true
-                delegate: Text {
-                    horizontalAlignment: Text.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
-                    opacity: model.month === monthGrid.month ? 1 : 0.5
-                    text   : model.day
-                    color  : getDayColor()
-
-                    function getDayColor() {
-                        if((model.day === currentDate.getDate()) && (model.month === currentDate.getMonth())) {
-                            return 'blue'
-                        }
-                        if((model.day === d.internalDate.getDate()) && (model.month === d.internalDate.getMonth())) {
-                            return 'skyblue'
-                        }
-                        if(model.today === true) {
-                            return 'steelblue'
-                        }
-
-                        return 'black'
-                    }
-                }
-
-                onClicked: {
-                    d.internalDate = date
-
-                    if(d.doubleClickValid == true) {
-                        /* The boolean is still true, thus it is a double
+          if(d.doubleClickValid == true) {
+            /* The boolean is still true, thus it is a double
                          * click. Set the date of the calender. */
-                        currentDate = date
-                        calendarPicker.dateSelected(currentDate)
-                    } else {
-                        d.doubleClickValid = true
-                        doubleClickTimer.start()
-                    }
-                }
-            }
+            currentDate = date
+            calendarPicker.dateSelected(currentDate)
+          } else {
+            d.doubleClickValid = true
+            doubleClickTimer.start()
+          }
         }
+      }
     }
+  }
 }

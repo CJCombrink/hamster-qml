@@ -92,7 +92,7 @@ Item {
           Layout.fillWidth: true
 
           function clear() {
-            textTime_.text              = ""
+            textTime_.text = ""
             factEditor_.clear()
           }
 

@@ -26,123 +26,123 @@ import QtQuick.Controls.Styles 1.1
 import SortFilterModelPyQt 1.0
 
 Item {
-    id: pageOverview
+  id: pageOverview
 
-    width: 668
-    height: mainLayout.implicitHeight + 2 * margin
+  width: 668
+  height: mainLayout.implicitHeight + 2 * margin
 
-    property int margin: 11
+  property int margin: 11
 
-    ColumnLayout {
-        id: mainLayout
+  ColumnLayout {
+    id: mainLayout
+    anchors.fill: parent
+    anchors.margins: margin
+
+    GroupBox {
+      id: groupBoxCurrent
+      Layout.fillWidth: true
+      RowLayout {
+        id: currentRowLayout
         anchors.fill: parent
-        anchors.margins: margin
-
-        GroupBox {
-            id: groupBoxCurrent
-            Layout.fillWidth: true
-            RowLayout {
-                id: currentRowLayout
-                anchors.fill: parent
-                ColumnLayout {
-                    Label  {
-                        id: labelStart_
-                        text: "Start"
-                        font.pointSize: 12
-                        font.bold     : true
-                        color         : "steelblue"
-                    }
-                    DateEdit {
-                        id: timeEditStart
-                        currentDate: new Date()
-                        onCurrentDateChanged: sortFilterModel.startDate = currentDate
-                        Component.onCompleted: {
-                            // The overview page starts on the first day of the month and
-                            // shows the facts for the rest of the month up to the current
-                            // date.
-                            var date = new Date();
-                            date.setDate(1)
-                            currentDate = date
-                        }
-                    }
-                }
-                ColumnLayout {
-                    Label  {
-                        text: "End"
-                        font: labelStart_.font
-                        color: labelStart_.color
-                    }
-                    DateEdit {
-                        id: timeEditEnd
-                        currentDate: new Date()
-                        onCurrentDateChanged: sortFilterModel.endDate = currentDate
-                    }
-                }
-
-                Rectangle {
-                    Layout.fillWidth: true
-                }
-
-                ColumnLayout {
-                    Label {
-                        text: "New Fact"
-                        font: labelStart_.font
-                        color: labelStart_.color
-                    }
-                    DateEdit {
-                        id: timeEditNewFact
-                        currentDate: new Date()
-
-                        Component.onCompleted: {
-                            timeEditNewFact.onDateSelected.connect(showCreationDialog)
-                        }
-
-                        function showCreationDialog() {
-                            var editWidgetComponent = Qt.createComponent("EditWidget.qml");
-                            if (editWidgetComponent.status === Component.Ready) {
-                                var dialog = editWidgetComponent.createObject(parent,{start: currentDate, end: currentDate});
-                                dialog.accepted.connect(dialogAccepted)
-                                dialog.clearAll();
-                                dialog.show()
-                            } else {
-                                console.log('Component is not ready: ', component.errorString())
-                            }
-                        }
-
-                        function dialogAccepted(key, start, end, category, activity, description) {
-                            py.hamster_lib.create(start, end, activity, category, description);
-                        }
-                    }
-                }
+        ColumnLayout {
+          Label  {
+            id: labelStart_
+            text: "Start"
+            font.pointSize: 12
+            font.bold     : true
+            color         : "steelblue"
+          }
+          DateEdit {
+            id: timeEditStart
+            currentDate: new Date()
+            onCurrentDateChanged: sortFilterModel.startDate = currentDate
+            Component.onCompleted: {
+              // The overview page starts on the first day of the month and
+              // shows the facts for the rest of the month up to the current
+              // date.
+              var date = new Date();
+              date.setDate(1)
+              currentDate = date
             }
+          }
+        }
+        ColumnLayout {
+          Label  {
+            text: "End"
+            font: labelStart_.font
+            color: labelStart_.color
+          }
+          DateEdit {
+            id: timeEditEnd
+            currentDate: new Date()
+            onCurrentDateChanged: sortFilterModel.endDate = currentDate
+          }
         }
 
-        GroupBox {
-            id: groupBoxToday
-            title: "Facts"
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-
-            SortFilterModelPyQt {
-                id: sortFilterModel
-                startDate  : new Date()
-                endDate    : new Date()
-                sourceModel: py.fact_model
-            }
-
-            FactView {
-                id: tableViewToday
-                anchors.fill: parent
-                model: sortFilterModel
-            }
+        Rectangle {
+          Layout.fillWidth: true
         }
+
+        ColumnLayout {
+          Label {
+            text: "New Fact"
+            font: labelStart_.font
+            color: labelStart_.color
+          }
+          DateEdit {
+            id: timeEditNewFact
+            currentDate: new Date()
+
+            Component.onCompleted: {
+              timeEditNewFact.onDateSelected.connect(showCreationDialog)
+            }
+
+            function showCreationDialog() {
+              var editWidgetComponent = Qt.createComponent("EditWidget.qml");
+              if (editWidgetComponent.status === Component.Ready) {
+                var dialog = editWidgetComponent.createObject(parent,{start: currentDate, end: currentDate});
+                dialog.accepted.connect(dialogAccepted)
+                dialog.clearAll();
+                dialog.show()
+              } else {
+                console.log('Component is not ready: ', component.errorString())
+              }
+            }
+
+            function dialogAccepted(key, start, end, category, activity, description) {
+              py.hamster_lib.create(start, end, activity, category, description);
+            }
+          }
+        }
+      }
     }
 
-    Connections {
-        target: py.hamster_lib
-        onCurrentUpdated : {}
-        onErrorMessage   : {}
-        onStartSuccessful: {}
-        onStopSuccessful : {}
+    GroupBox {
+      id: groupBoxToday
+      title: "Facts"
+      Layout.fillWidth: true
+      Layout.fillHeight: true
+
+      SortFilterModelPyQt {
+        id: sortFilterModel
+        startDate  : new Date()
+        endDate    : new Date()
+        sourceModel: py.fact_model
+      }
+
+      FactView {
+        id: tableViewToday
+        anchors.fill: parent
+        model: sortFilterModel
+      }
     }
+  }
+
+  Connections {
+    target: py.hamster_lib
+    onCurrentUpdated : {}
+    onErrorMessage   : {}
+    onStartSuccessful: {}
+    onStopSuccessful : {}
+  }
 }

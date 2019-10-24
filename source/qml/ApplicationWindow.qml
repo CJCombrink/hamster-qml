@@ -24,69 +24,69 @@ import QtQuick.Layouts 1.12
 import QtQuick.Window 2.2
 
 ApplicationWindow {
-    id: appWindow
+  id: appWindow
 
-    title: qsTr("Hamster-QML")
+  title: qsTr("Hamster-QML")
 
-    width: 710
-    minimumWidth: 470
-    height: 500
+  width: 710
+  minimumWidth: 470
+  height: 500
 
-    Component.onCompleted: {
-        visible = true;
-        textHeader.text = textHeader.text + " (" + py.version + ")"
-        py.hamster_lib.current()
+  Component.onCompleted: {
+    visible = true;
+    textHeader.text = textHeader.text + " (" + py.version + ")"
+    py.hamster_lib.current()
+  }
+  ColumnLayout {
+    id: mainLayout
+    anchors.fill: parent
+
+    Label {
+      id: textHeader
+      text: "Hamster QML"
+      color: "blue"
+      font.pointSize:  14
+      Layout.fillWidth: true
+      horizontalAlignment: Text.AlignHCenter
     }
-    ColumnLayout {
-        id: mainLayout
-        anchors.fill: parent
 
-        Label {
-            id: textHeader
-            text: "Hamster QML"
-            color: "blue"
-            font.pointSize:  14
-            Layout.fillWidth: true
-            horizontalAlignment: Text.AlignHCenter
-        }
-
-        TabBar {
-            id: mainTabBar
-            Layout.fillWidth: true
-            TabButton {
-                text: qsTr("Input")
-            }
-            TabButton {
-                text: qsTr("Overview")
-            }
-            TabButton {
-                text: qsTr("Configure")
-            }
-        }
-
-        StackLayout {
-            Layout.fillWidth : true
-            Layout.fillHeight: true
-            currentIndex: mainTabBar.currentIndex
-            Item {
-                PageMain {
-                    visible: true
-                    anchors.fill: parent
-                }
-            }
-            Item {
-                PageOverview {
-                    visible: true
-                    anchors.fill: parent
-                }
-            }
-            Item {
-                PageConfigure {
-                    visible: true
-                    anchors.fill: parent
-                }
-            }
-
-        }
+    TabBar {
+      id: mainTabBar
+      Layout.fillWidth: true
+      TabButton {
+        text: qsTr("Input")
+      }
+      TabButton {
+        text: qsTr("Overview")
+      }
+      TabButton {
+        text: qsTr("Configure")
+      }
     }
+
+    StackLayout {
+      Layout.fillWidth : true
+      Layout.fillHeight: true
+      currentIndex: mainTabBar.currentIndex
+      Item {
+        PageMain {
+          visible: true
+          anchors.fill: parent
+        }
+      }
+      Item {
+        PageOverview {
+          visible: true
+          anchors.fill: parent
+        }
+      }
+      Item {
+        PageConfigure {
+          visible: true
+          anchors.fill: parent
+        }
+      }
+
+    }
+  }
 }
