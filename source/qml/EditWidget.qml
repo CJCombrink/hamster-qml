@@ -24,159 +24,139 @@ import QtQuick.Layouts 1.3
 import QtQuick.Window 2.2
 
 Window {
-    id: mypopDialog
-    title        : "Update Fact"
-    width        : mainLayout.implicitWidth + 2 * margin
-    height       : mainLayout.implicitHeight + 2 * margin
-    minimumWidth : mainLayout.Layout.minimumWidth + 2 * margin
-    minimumHeight: mainLayout.Layout.minimumHeight + 2 * margin
-    flags        : Qt.Dialog
-    modality     : Qt.WindowModal
+  id: root_
+  title        : "Update Fact"
+  width        : mainLayout.implicitWidth + 2 * margin
+  height       : mainLayout.implicitHeight + 2 * margin
+  minimumWidth : mainLayout.Layout.minimumWidth + 2 * margin
+  minimumHeight: mainLayout.Layout.minimumHeight + 2 * margin
+  flags        : Qt.Dialog
+  modality     : Qt.WindowModal
 
-    property int key
-    property date start
-    property date end
-    property string category
-    property string activity
-    property string description
+  property int key
+  property date start
+  property date end
+  property string category
+  property string activity
+  property string description
 
-    property int margin: 10
+  property int margin: 10
 
-    signal accepted(int key, date start, date end, string category, string activity, string description)
+  signal accepted(int key, date start, date end, string category, string activity, string description)
 
-    function clearAll() {
-        timeEditStart.text = ""
-        timeEditEnd.text = ""
+  function clearAll() {
+    timeEditStart.text = ""
+    timeEditEnd.text = ""
+  }
+
+  ColumnLayout {
+    id: mainLayout
+    anchors.fill   : parent
+    anchors.margins: margin
+
+    Text {
+      id: textHeader
+      text               : "Update Existing Fact"
+      color              : "blue"
+      font.pointSize     :  14
+      Layout.fillWidth   : true
+      horizontalAlignment: Text.AlignLeft
     }
 
-    ColumnLayout {
-        id: mainLayout
-        anchors.fill   : parent
-        anchors.margins: margin
-
-        Text {
-            id: textHeader
-            text               : "Update Existing Fact"
-            color              : "blue"
-            font.pointSize     :  14
-            Layout.fillWidth   : true
-            horizontalAlignment: Text.AlignLeft
+    GroupBox {
+      id: groupBoxCurrent
+      Layout.fillWidth: true
+      RowLayout {
+        anchors.fill: parent
+        ColumnLayout {
+          Label  {
+            text: "Start"
+          }
+          TimeEdit {
+            id: timeEditStart
+            dateTime: start
+          }
         }
-
-        GroupBox {
-            id: groupBoxCurrent
-            Layout.fillWidth: true
-            RowLayout {
-                id: currentRowLayout
-                anchors.fill: parent
-                ColumnLayout {
-                    Label  {
-                        text: "Start"
-                    }
-                    TimeEdit {
-                        id: timeEditStart
-                        dateTime: start
-                    }
-                }
-                ColumnLayout {
-                    Label  {
-                        text: "End"
-                    }
-                    TimeEdit {
-                        id: timeEditEnd
-                        dateTime: end
-                    }
-                }
-                ColumnLayout {
-                    Label  {
-                        text: "Activity"
-                    }
-                    TextField {
-                        id: textFieldActivity
-                        text: activity
-                        selectByMouse: true
-                    }
-                }
-                ColumnLayout {
-                    Label  {
-                        text: "Category"
-                    }
-                    TextField {
-                        id: textFieldCategory
-                        text: category? category : ""
-                        selectByMouse: true
-                    }
-                }
-                ColumnLayout {
-                    Layout.fillWidth: true
-                    Label  {
-                        text: "Description"
-                        Layout.fillWidth: true
-                    }
-                    TextField {
-                        id: textFieldDescription
-                        text: description? description : ""
-                        Layout.fillWidth: true
-                        selectByMouse: true
-                    }
-                }
-                ColumnLayout {
-                    Label  {
-                        text: "Duration"
-                        width: 30
-                    }
-                    TextField {
-                        id: textFieldDuration
-                        readOnly: true
-                        width   : 30
-                    }
-
-                    Component.onCompleted: {
-                        timeEditStart.onDateTimeChanged.connect(updateDuration)
-                        timeEditEnd.onDateTimeChanged.connect(updateDuration)
-                        updateDuration()
-                    }
-
-                    function updateDuration() {
-                        var duration = new Date(0, 0, 0)
-                        duration.setMilliseconds((timeEditEnd.dateTime - timeEditStart.dateTime))
-                        textFieldDuration.text = Qt.formatTime(duration, "hh:mm")
-                    }
-                }
+        ColumnLayout {
+          Label  {
+            text: "End"
+          }
+          TimeEdit {
+            id: timeEditEnd
+            dateTime: end
+          }
+        }
+        FactEditor {
+          id: factEditor_
+          Layout.fillWidth: true
+          simple: false
+          Component.onCompleted: {
+            factEditor_.setCategory( root_.category )
+            factEditor_.setActivity( root_.activity )
+            factEditor_.description = root_.description
+          }
+        }
+        ColumnLayout {
+          Label  {
+            text: "Duration"
+          }
+          TextField {
+            id: textFieldDuration
+            readOnly: true
+            implicitWidth: leftPadding + textMetrics_.advanceWidth + rightPadding
+            TextMetrics {
+              id: textMetrics_
+              text: "HH:MM"
             }
+          }
+
+          Component.onCompleted: {
+            timeEditStart.onDateTimeChanged.connect(updateDuration)
+            timeEditEnd.onDateTimeChanged.connect(updateDuration)
+            updateDuration()
+          }
+
+          function updateDuration() {
+            var duration = new Date(0, 0, 0)
+            duration.setMilliseconds((timeEditEnd.dateTime - timeEditStart.dateTime))
+            textFieldDuration.text = Qt.formatTime(duration, "hh:mm")
+          }
         }
+      }
+    }
+    Rectangle {
+      height: 30
+      Layout.fillWidth: true
+
+      RowLayout {
+        id: buttonsRowLayout
+        Button {
+          text: "Ok"
+          enabled: (timeEditStart.busyEditing == false)
+                   && (timeEditEnd.busyEditing == false)
+                   && (factEditor_.valid == true)
+          onClicked: {
+            root_.accepted(key
+                           , timeEditStart.dateTime
+                           , timeEditEnd.dateTime
+                           , factEditor_.category
+                           , factEditor_.activity
+                           , factEditor_.description)
+            root_.close();
+          }
+        }
+
+        Button {
+          text: "Cancel"
+          onClicked: {
+            root_.close();
+          }
+        }
+
         Rectangle {
-            height: 30
-            Layout.fillWidth: true
-
-            RowLayout {
-                id: buttonsRowLayout
-                //anchors.fill: parent
-                Button {
-                    text: "Ok"
-                    enabled: (timeEditStart.busyEditing == false) && (timeEditEnd.busyEditing == false) && (textFieldActivity.text != "")
-                    onClicked: {
-                        mypopDialog.accepted(key
-                                             , timeEditStart.dateTime
-                                             , timeEditEnd.dateTime
-                                             , textFieldCategory.text
-                                             , textFieldActivity.text
-                                             , textFieldDescription.text)
-                        mypopDialog.close();
-                    }
-                }
-
-                Button {
-                    text: "Cancel"
-                    onClicked: {
-                        mypopDialog.close();
-                    }
-                }
-
-                Rectangle {
-                    Layout.fillWidth: true
-                }
-            }
+          Layout.fillWidth: true
         }
+      }
     }
+  }
 }

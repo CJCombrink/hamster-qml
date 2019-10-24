@@ -21,7 +21,7 @@ import sys
 import datetime
 from datetime import timedelta
 
-from PyQt5.QtCore import QObject, pyqtProperty, pyqtSignal, pyqtSlot, QDateTime, QDate, QTime
+from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot, QDateTime, QDate, QTime
 
 import hamster_lib
 from hamster_lib import Fact, HamsterControl, reports, Category, Activity
@@ -75,6 +75,60 @@ class FactPyQt(QObject):
     def day(self):
         return self.end().date()
 
+class HqActivity(QObject):
+    """ HamsterQML QObject wrapper for a Activity
+
+    The hamster object must be wrapped by a QObject to be
+    able to access the slot members from QML
+    """
+    def __init__(self, activity):
+        super(HqActivity, self).__init__()
+        self._activity = activity
+
+    @pyqtSlot(result=str)
+    def name(self):
+      return self._activity.name
+
+    @pyqtSlot(result=str)
+    def categoryName(self):
+      return self._activity.category.name
+
+    @pyqtSlot(result=int)
+    def key(self):
+      return self._activity.pk
+
+class HqCategory(QObject):
+    """ HamsterQML QObject wrapper for a Category
+
+    The hamster object must be wrapped by a QObject to be
+    able to access the slot members from QML
+    """
+    def __init__(self, category = None):
+        super(HqCategory, self).__init__()
+        self._category   = category
+        self._activities = set()
+
+    @pyqtSlot(result=str)
+    def name(self):
+      if self._category is None:
+        return "(uncategorised)"
+      return self._category.name
+
+    @pyqtSlot(result=int)
+    def key(self):
+      if self._category is None:
+        return -1
+      return self._category.pk
+
+    @pyqtSlot(HqActivity, result=int)
+    def addActivity(self, activity):
+      self._activities.add( activity )
+
+    @pyqtSlot(result=HqActivity)
+    def activities(self):
+      return self._activities
+
+
 class HamsterConfig():
     """ Configuration class for the Hamster Library
         This class will most probrbaly be replaced by a ConfigParser class """
@@ -102,17 +156,20 @@ class HamsterConfig():
 class HamsterPyQt(QObject):
     """ Hamser interface """
 
-    currentUpdated  = pyqtSignal(FactPyQt, name='currentUpdated', arguments=['current'])
-    errorMessage    = pyqtSignal('QString', name='errorMessage', arguments=['message'])
-    startSuccessful = pyqtSignal(name='startSuccessful')
-    stopSuccessful  = pyqtSignal(name='stopSuccessful')
-    factUpdated     = pyqtSignal(FactPyQt, name='factUpdated', arguments=['fact'])
-    factAdded       = pyqtSignal(FactPyQt, name='factAdded', arguments=['fact'])
+    currentUpdated    = pyqtSignal(FactPyQt, name='currentUpdated', arguments=['current'])
+    errorMessage      = pyqtSignal('QString', name='errorMessage', arguments=['message'])
+    startSuccessful   = pyqtSignal(name='startSuccessful')
+    stopSuccessful    = pyqtSignal(name='stopSuccessful')
+    factUpdated       = pyqtSignal(FactPyQt, name='factUpdated', arguments=['fact'])
+    factAdded         = pyqtSignal(FactPyQt, name='factAdded', arguments=['fact'])
+    categoriesChanged = pyqtSignal(name='categoriesChanged')
+    activitiesChanged = pyqtSignal(name='activitiesChanged')
 
     def __init__(self):
         super(HamsterPyQt, self).__init__()
         self._config     = HamsterConfig()
         self._control    = HamsterControl(self._config);
+        self.categories()
 
     def _cleanStart(self, start):
         # Always update the start time to be on the minute with 10 seconds added.
@@ -143,6 +200,19 @@ class HamsterPyQt(QObject):
                 factPyQt = FactPyQt(fact)
                 factsPyQt.append(factPyQt)
             return factsPyQt
+
+    @pyqtSlot()
+    def categories(self):
+      categories  = self._control.categories.get_all()
+      categoryDic = {}
+      categoryDic[None] = HqCategory()
+      for cat in categories:
+        categoryDic[cat] = HqCategory(cat)
+      activities  = self._control.activities.get_all()
+      for act in activities:
+        cat = act.category
+        categoryDic[cat].addActivity(HqActivity(act))
+      return categoryDic
 
     @pyqtSlot('QString')
     def start(self, command):
@@ -254,7 +324,6 @@ class HamsterPyQt(QObject):
             string = '{fact} ({duration} minutes)'.format(fact=fact, duration=fact.get_string_delta())
             self.currentUpdated.emit(FactPyQt(fact));
 
-
     @pyqtSlot(int, 'QDateTime', 'QDateTime', 'QString', 'QString', 'QString')
     def updateFact(self, key, startTime, endTime, activity, category, description):
         # get the fact from the Fact Manager
@@ -280,3 +349,57 @@ class HamsterPyQt(QObject):
         except ValueError as err:
             self.errorMessage.emit("Could not update fact: {0}".format(err))
             return
+
+    @pyqtSlot(int)
+    def removeCategory(self, pk):
+      if int(pk) == -1:
+        return
+      category = self._control.categories.get( pk )
+      if category is None:
+        return
+      self._control.categories.remove( category )
+      self.categoriesChanged.emit()
+
+    @pyqtSlot(int)
+    def removeActivity(self, pk):
+      activity = self._control.activities.get( pk )
+      rawActivity = self._control.activities.get( pk, raw=True )
+      if activity is None:
+        return
+      self._control.activities.remove( activity )
+      self.activitiesChanged.emit()
+
+    @pyqtSlot(int, result=bool)
+    def canRemoveCategory(self, pk):
+      if int(pk) == -1:
+        return False
+      # Get the category and then get the raw category using the
+      # get_by_name() function. The CategoryManager does not have
+      # a get( pk, raw ) function like the ActivityManager.
+      # Using the raw objects is easier than finding the
+      # number of associted activities manually.
+      category = self._control.categories.get( pk )
+      if category is None:
+        return
+      rawCategory = self._control.categories.get_by_name( category.name, raw=True )
+      return len( rawCategory.activities ) == 0
+
+    @pyqtSlot(int, result=bool)
+    def canRemoveActivity(self, pk):
+      rawActivity = self._control.activities.get( pk, raw=True )
+      return len( rawActivity.facts ) == 0
+
+    @pyqtSlot(str, str, result=bool)
+    def addActivity(self, activityName, categoryName):
+      activityName = activityName.strip()
+      categoryName = categoryName.strip()
+
+      category = None
+      activity = None
+      if categoryName != "" and categoryName != "(uncategorised)":
+        category = self._control.categories.get_or_create(Category(categoryName))
+
+      if activityName != "":
+        activity = self._control.activities.get_or_create(Activity(activityName, category=category))
+
+      return category is not None or activity is not None

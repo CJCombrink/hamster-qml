@@ -20,15 +20,16 @@
 
 import sys
 
-from PyQt5.QtCore    import QObject, pyqtProperty, pyqtSignal, pyqtSlot
-from PyQt5.QtGui     import QGuiApplication, QIcon
+from PyQt5.QtCore    import QObject, QSettings, pyqtProperty, pyqtSignal, pyqtSlot, Qt
+from PyQt5.QtGui     import QGuiApplication, QIcon, QImage
 from PyQt5.QtWidgets import qApp
-from PyQt5.QtQuick   import QQuickView
+from PyQt5.QtQuick   import QQuickView, QQuickImageProvider
 from PyQt5.QtQml     import qmlRegisterType, QQmlApplicationEngine
 
 from hamster_pyqt      import HamsterPyQt, FactPyQt
 from facts_model       import FactModelPyQt
 from sort_filter_model import SortFilterModelPyQt
+from categories_model  import HqCategoriesModel
 
 cVERSION = u'0.4'
 # Set the windows ICON (need to figure out what happens on Linux)
@@ -36,42 +37,93 @@ import ctypes
 myappid = u'cjc.hamster-qml.' + cVERSION
 ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 
-class Namespace(QObject):
+class ImageProvider(QQuickImageProvider):
+    """
+    Image provider for the qml to resolve images from name
+    if the style does not provide the correct image.
+    The provider uses the icon naming spec from:
+    https://specifications.freedesktop.org/icon-naming-spec/icon-naming-spec-latest.html
+    """
+    def __init__(self):
+        super(ImageProvider, self).__init__(QQuickImageProvider.Image)
 
+    def requestImage(self, imageId, size):
+        imagePath = '../Resources/Images/'
+        imageDict = {
+          'list-add'    : 'list-add.svg',
+          'list-remove' : 'list-remove.svg',
+          'view-refresh': 'view-refresh.svg'
+        }
+
+        imageName = imageDict.get( imageId )
+        if imageName is not None:
+          img = QImage( imagePath + imageName).scaled(size, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        else:
+          img = QImage()
+        return img, img.size()
+
+
+class Settings( QObject ):
+  """
+  The Hamster-Qml Appliction Settings
+  This class contains settings used by the Hamster-Qml application.
+  TODO: Store settings to QSettings ini file.
+  """
+  dynamicCategoriesChanged = pyqtSignal(bool)
+  dynamicActivitiesChanged = pyqtSignal(bool)
+
+  def __init__(self):
+      super().__init__()
+      settings = QSettings()
+      self._dynamicCategories = bool( settings.value( "DynamicCategories", True, type=bool) )
+      self._dynamicActivities = bool( settings.value( "DynamicActivities", True, type=bool ) )
+
+  @pyqtProperty(bool, notify=dynamicCategoriesChanged)
+  def dynamicCategories(self):
+    """If dynamic categories are set to True, categories can be added on the fly
+       when new facts are created. Otherwise the GUI will only allow selecting
+       existing categories. The Configure page is used to add new categories. """
+    return self._dynamicCategories
+
+  @dynamicCategories.setter
+  def dynamicCategories(self, value):
+    if self._dynamicCategories != value:
+      self._dynamicCategories = value
+      QSettings().setValue( "DynamicCategories", value )
+      self.dynamicCategoriesChanged.emit( value )
+
+  @pyqtProperty(bool, notify=dynamicActivitiesChanged)
+  def dynamicActivities(self):
+    """If dynamic activities are set to True, activities can be added on the fly
+       when new facts are created. Otherwise the GUI will only allow selecting
+       existing activities. The Configure page is used to add new activities. """
+    return self._dynamicActivities
+
+  @dynamicActivities.setter
+  def dynamicActivities(self, value):
+    if self._dynamicActivities != value:
+      self._dynamicActivities = value
+      QSettings().setValue( "DynamicActivities", value )
+      self.dynamicActivitiesChanged.emit( value )
+
+class Namespace(QObject):
     """Namespace to add clarity on the QML side, contains all Python objects
     exposed to the QML root context as attributes."""
 
     hamsterLibChanged = pyqtSignal()
-    nameChanged = pyqtSignal('QString', name='nameChanged', arguments=['value'])
 
     def __init__(self):
         super(Namespace, self).__init__()
         # Initialise the value of the properties.
-        self._name = 'hamster'
-        self._shoeSize = 0
+        self._name        = 'hamster'
         self._hamster_lib = HamsterPyQt()
-        self._facts = FactModelPyQt(self._hamster_lib);
-
+        self._facts       = FactModelPyQt(self._hamster_lib);
+        self._categories  = HqCategoriesModel(self._hamster_lib)
+        self._settings    = Settings()
 
     @pyqtProperty(str)
     def version(self):
         return cVERSION
-
-    # Define the getter of the 'name' property.  The C++ type of the
-    # property is QString which Python will convert to and from a string.
-    @pyqtProperty('QString', notify=nameChanged)
-    def name(self):
-        return self._name
-
-    # Define the setter of the 'name' property.
-    @name.setter
-    def name(self, name):
-        self._name = name
-        self.nameChanged.emit(self._name)
-
-    @pyqtSlot('QString')
-    def setup_new_name(self, new_name):
-        self.name = new_name
 
     @pyqtProperty(QObject, notify=hamsterLibChanged)
     def hamster_lib(self):
@@ -81,21 +133,39 @@ class Namespace(QObject):
     def fact_model(self):
         return self._facts
 
+    @pyqtProperty(QObject, notify=hamsterLibChanged)
+    def category_model(self):
+        return self._categories
+
+    @pyqtProperty(QObject, notify=hamsterLibChanged)
+    def settings(self):
+      return self._settings
+
 # Main Function
 if __name__ == '__main__':
     # Create main app
     sys.argv += ['--style', 'fusion']
     myApp = QGuiApplication(sys.argv)
+    # Setting the application name and organisation
+    # so that the default constructor of QSettings will
+    # create an INI file on disk
+    qApp.setApplicationName( 'Hamster-QML' )
+    qApp.setApplicationVersion( cVERSION )
+    qApp.setOrganizationName( 'cjc' )
     qApp.setWindowIcon(QIcon('../Resources/Images/hamster-gray_256.png'))
+    # Setting the defaultf format for QSettins to be INI files.
+    # I don't like stuff writing to the Registry on Windows...
+    QSettings.setDefaultFormat( QSettings.IniFormat )
     # Register the Python type. Its URI is 'SortFilterModelPyQt', it's v1.0 and the type
     # will be called 'SortFilterModelPyQt' in QML.
     qmlRegisterType(SortFilterModelPyQt, 'SortFilterModelPyQt', 1, 0, 'SortFilterModelPyQt')
     # Create the QML Engine
     engine = QQmlApplicationEngine()
+    engine.addImageProvider("images", ImageProvider())
     context = engine.rootContext()
     # Add the namespace as 'py' in the QML context. If this is done, one can
     # clearly see which objects are accessed from the python side.
-    py =  Namespace()
+    py = Namespace()
     context.setContextProperty('py', py)
     engine.load('qml/main.qml')
     sys.exit(myApp.exec_())

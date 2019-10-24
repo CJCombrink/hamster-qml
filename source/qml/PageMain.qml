@@ -19,188 +19,210 @@
 ****************************************************************************/
 
 import QtQuick 2.8
-import QtQuick.Controls 2.1
+import QtQuick.Controls 2.5
 import QtQuick.Layouts 1.3
 import QtQuick.Window 2.2
 import QtQuick.Controls.Styles 1.1
 import SortFilterModelPyQt 1.0
 
 Item {
-    id: pageMain
+  id: pageMain
 
-    width: 668
-    height: mainLayout.implicitHeight + 2 * margin
+  width: 668
+  height: mainLayout.implicitHeight + 2 * margin
 
-    property int margin: 11
+  property int margin: 11
 
-    Component.onCompleted: {
-        py.hamster_lib.current()
-        currentTimer.running = true
-    }
+  Component.onCompleted: {
+    py.hamster_lib.current()
+    currentTimer.running = true
+  }
 
-    ColumnLayout {
-        id: mainLayout
+  ColumnLayout {
+    id: mainLayout
+    anchors.fill: parent
+    anchors.margins: margin
+
+    GroupBox {
+      id: groupBoxCurrent
+      title: "Current work"
+      Layout.fillWidth: true
+
+      RowLayout {
+        id: currentRowLayout
         anchors.fill: parent
-        anchors.margins: margin
 
-        GroupBox {
-            id: groupBoxCurrent
-            title: "Current work"
-            Layout.fillWidth: true
-
-            RowLayout {
-                id: currentRowLayout
-                anchors.fill: parent
-
-                TextField {
-                    id: textFieldCurrent
-                    placeholderText: "<no work in progress>"
-                    selectByMouse: true
-                    readOnly: true
-                    Layout.fillWidth: true
-                }
-                Button {
-                    id: buttonCurrentStop
-                    text: "Stop"
-                    enabled: textFieldCurrent.text
-                    onClicked: py.hamster_lib.stop()
-                }
-                Button {
-                    id: buttonCurrentCancel
-                    text: "Cancel"
-                    enabled: textFieldCurrent.text
-                    onClicked: py.hamster_lib.cancel()
-                }
-                Button {
-                    id: buttonCurrentRefresh
-                    text: "Refresh"
-                    onClicked: py.hamster_lib.current()
-                }
-            }
+        TextField {
+          id: textFieldCurrent
+          placeholderText: "<no work in progress>"
+          selectByMouse: true
+          readOnly: true
+          Layout.fillWidth: true
         }
-
-        GroupBox {
-            id: rowBox
-            title: "Log work"
-            Layout.fillWidth: true
-
-            RowLayout {
-                id: rowLayoutActivity
-                anchors.fill: parent
-
-                TextField {
-                    id: textFieldNew
-                    placeholderText: "<time> [activity]@<category>, description"
-                    validator: RegExpValidator { }
-                    Layout.fillWidth: true
-                    focus: true
-                    selectByMouse: true
-                    Keys.onPressed: {
-                        if ((event.key == Qt.Key_Enter) || (event.key == Qt.Key_Return) ){
-                            buttonStart.clicked()
-                            event.accepted = true;
-                        } else if(event.key == Qt.Key_Escape) {
-                            textFieldNew.text = ""
-                            event.accepted = true;
-                        }
-                    }
-                    Component.onCompleted: {
-                        /* Build up the final RegExp using logical parts.
-                         * This is to allow for better understanding, and will
-                         * allow future work to allow custom formats */
-                        const reTimeFormat    = '(([01]\\d|2[0-3]):)([0-5]\\d)'
-                        const reMaybeTimeSpan =  '((' + reTimeFormat +' )(- (' + reTimeFormat + ') )?)'
-                        const reMinutesAgo    = '(-\\d+)'
-                        const reActivity      = '[A-Za-z0-9_-]+'
-                        const reCategory      = '@[A-Za-z0-9_-]*'
-                        const reComment       = ', .+'
-                        const reMaybeCategory = '(' + reCategory + ')?'
-                        const reMaybeComment  = '(' + reComment + ')?'
-                        /* Create the final pattern. */
-                        const reFinal         = '^('+ reMaybeTimeSpan + '|' + reMinutesAgo + ' )?' + reActivity + reMaybeCategory + reMaybeComment + '$'
-                        validator.regExp      = new RegExp( reFinal )
-                    }
-                }
-                Button {
-                    id: buttonStart
-                    text: "Start"
-                    enabled: textFieldNew.text ? true: false
-                    onClicked: {
-                        py.hamster_lib.start(textFieldNew.text)
-                    }
-                }
-            }
+        Button {
+          id: buttonCurrentStop
+          text: "Stop"
+          enabled: textFieldCurrent.text
+          onClicked: py.hamster_lib.stop()
         }
-
-        GroupBox {
-            id: groupBoxToday
-            title: "Today"
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-
-            SortFilterModelPyQt {
-                id: sortFilterModel
-                startDate  : new Date()
-                endDate    : new Date()
-                sourceModel: py.fact_model
-            }
-
-            FactView {
-                id: tableViewToday
-                anchors.fill: parent
-                model: sortFilterModel
-            }
+        Button {
+          id: buttonCurrentCancel
+          text: "Cancel"
+          enabled: textFieldCurrent.text
+          onClicked: py.hamster_lib.cancel()
         }
+        Button {
+          id: buttonCurrentRefresh
+          text: "Refresh"
+          onClicked: py.hamster_lib.current()
+        }
+      }
     }
 
-    Popup {
-        id: errorPopup
-        x: 20
-        y: (pageMain.height / 2) - (height / 2)
-        width : pageMain.width - 40
-        height: 40
-        modal: true
-        focus: true
-        Label  {
-            id: labelErrorPopup
-            font.italic: true
-            color: "red"
-        }
-        closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
-    }
+    GroupBox {
+      id: rowBox
+      title: "Log work"
+      Layout.fillWidth: true
 
-    Timer {
-        id: currentTimer
-        interval: 1000
-        running : false
-        repeat  : true
-        onTriggered: {
-            py.hamster_lib.current()
-        }
-    }
+      ColumnLayout {
+        anchors.fill: parent
 
-    Connections {
-        target: py.hamster_lib
-        onCurrentUpdated: {
-            if(current != null) {
-                textFieldCurrent.text = Qt.formatDateTime(current.start(), "hh:mm") + " " + current.activity() + "@" + current.category() + " " + current.description() + " (" + Qt.formatTime(current.duration(), "hh:mm") + ")"
-            } else {
-                textFieldCurrent.text = ""
+        RowLayout {
+          id: controlFactNew_
+          Layout.fillWidth: true
+
+          function clear() {
+            textTime_.text = ""
+            factEditor_.clear()
+          }
+
+          TextField {
+            id: textTime_
+            placeholderText: "<time>"
+            focus: true
+            selectByMouse: true
+
+            TextMetrics {
+              id: textMetrics_
+              text: "00:00 - 00:00"
             }
+            // Ensure that the size will fit the TextMetrics
+            Layout.maximumWidth: leftPadding + textMetrics_.advanceWidth + rightPadding
+
+            property var _reTimeFormat   : '(([01]\\d|2[0-3]):)([0-5]\\d)'
+            property var _reMaybeTimeSpan:  '((' + _reTimeFormat +')( - (' + _reTimeFormat + '))?)'
+            property var _reMinutesAgo   : '(-\\d+)'
+            property var _regExpTimeSpan : new RegExp('^' + _reTimeFormat + ' - ' + _reTimeFormat + '$')
+
+            validator: RegExpValidator {}
+
+            Keys.onPressed: {
+              if( event.key == Qt.Key_Space) {
+                if( _regExpTimeSpan.test( text ) === true ) {
+                  event.accepted = true
+                  comboCategory_.focus = true
+                }
+              }
+            }
+            Component.onCompleted: {
+              /* Create the final pattern. */
+              const reFinal         = '^('+ _reMaybeTimeSpan + '|' + _reMinutesAgo + ')?$'
+              validator.regExp      = new RegExp( reFinal )
+            }
+          }
+
+          FactEditor {
+            id: factEditor_
+            Layout.fillWidth: true
+            onClearRequested: controlFactNew_.clear()
+            onAccepted: _buttonStart2.clicked()
+          }
+
+          Button {
+            id: _buttonStart2
+            text: "Start"
+            enabled: textTime_.acceptableInput
+                     && factEditor_.valid
+            onClicked: {
+              var fact = textTime_.text +' ' + factEditor_.factInfo
+              py.hamster_lib.start( fact )
+            }
+          }
         }
-        onErrorMessage   : {
-            labelErrorPopup.text = message
-            errorPopup.open()
-        }
-        onStartSuccessful: {
-            textFieldNew.text = ""
-        }
-        onStopSuccessful: {
-            /* For now do nothing. Previously the model was refreshed, but since the model
+
+      }
+    }
+
+    GroupBox {
+      id: groupBoxToday
+      title: "Today"
+      Layout.fillWidth: true
+      Layout.fillHeight: true
+
+      SortFilterModelPyQt {
+        id: sortFilterModel
+        startDate  : new Date()
+        endDate    : new Date()
+        sourceModel: py.fact_model
+      }
+
+      FactView {
+        id: tableViewToday
+        anchors.fill: parent
+        model: sortFilterModel
+      }
+    }
+  }
+
+  Popup {
+    id: errorPopup
+    x: 20
+    y: (pageMain.height / 2) - (height / 2)
+    width : pageMain.width - 40
+    height: 40
+    modal: true
+    focus: true
+    Label  {
+      id: labelErrorPopup
+      font.italic: true
+      color: "red"
+    }
+    closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
+  }
+
+  Timer {
+    id: currentTimer
+    interval: 1000
+    running : false
+    repeat  : true
+    onTriggered: {
+      py.hamster_lib.current()
+    }
+  }
+
+  Connections {
+    target: py.hamster_lib
+    onCurrentUpdated: {
+      if(current != null) {
+        textFieldCurrent.text = Qt.formatDateTime(current.start(), "hh:mm") + " " + current.activity() + "@" + current.category() + " " + current.description() + " (" + Qt.formatTime(current.duration(), "hh:mm") + ")"
+      } else {
+        textFieldCurrent.text = ""
+      }
+    }
+    onErrorMessage   : {
+      labelErrorPopup.text = message
+      errorPopup.open()
+    }
+    onStartSuccessful: {
+      textFieldNew.text = ""
+      controlFactNew_.clear()
+    }
+    onStopSuccessful: {
+      /* For now do nothing. Previously the model was refreshed, but since the model
              * will now automatically add the fact from the signal emitted when a fact
              * is stopped, there is no need to refresh the model any more. The slot is
              * left here as a placeholder for now. */
-            // py.fact_model.refreshFacts()
-        }
+      // py.fact_model.refreshFacts()
     }
+  }
 }
