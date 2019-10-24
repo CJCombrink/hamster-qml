@@ -20,7 +20,7 @@
 
 import sys
 
-from PySide2.QtCore    import QObject, QSettings, pyqtProperty, Signal, Slot, Qt
+from PySide2.QtCore    import QObject, QSettings, Property, Signal, Slot, Qt
 from PySide2.QtGui     import QGuiApplication, QIcon, QImage
 from PySide2.QtWidgets import qApp
 from PySide2.QtQuick   import QQuickView, QQuickImageProvider
@@ -78,7 +78,7 @@ class Settings( QObject ):
       self._dynamicCategories = bool( settings.value( "DynamicCategories", True, type=bool) )
       self._dynamicActivities = bool( settings.value( "DynamicActivities", True, type=bool ) )
 
-  @pyqtProperty(bool, notify=dynamicCategoriesChanged)
+  @Property(bool, notify=dynamicCategoriesChanged)
   def dynamicCategories(self):
     """If dynamic categories are set to True, categories can be added on the fly
        when new facts are created. Otherwise the GUI will only allow selecting
@@ -92,7 +92,7 @@ class Settings( QObject ):
       QSettings().setValue( "DynamicCategories", value )
       self.dynamicCategoriesChanged.emit( value )
 
-  @pyqtProperty(bool, notify=dynamicActivitiesChanged)
+  @Property(bool, notify=dynamicActivitiesChanged)
   def dynamicActivities(self):
     """If dynamic activities are set to True, activities can be added on the fly
        when new facts are created. Otherwise the GUI will only allow selecting
@@ -121,23 +121,23 @@ class Namespace(QObject):
         self._categories  = HqCategoriesModel(self._hamster_lib)
         self._settings    = Settings()
 
-    @pyqtProperty(str)
+    @Property(str)
     def version(self):
         return cVERSION
 
-    @pyqtProperty(QObject, notify=hamsterLibChanged)
+    @Property(QObject, notify=hamsterLibChanged)
     def hamster_lib(self):
         return self._hamster_lib
 
-    @pyqtProperty(QObject, notify=hamsterLibChanged)
+    @Property(QObject, notify=hamsterLibChanged)
     def fact_model(self):
         return self._facts
 
-    @pyqtProperty(QObject, notify=hamsterLibChanged)
+    @Property(QObject, notify=hamsterLibChanged)
     def category_model(self):
         return self._categories
 
-    @pyqtProperty(QObject, notify=hamsterLibChanged)
+    @Property(QObject, notify=hamsterLibChanged)
     def settings(self):
       return self._settings
 
