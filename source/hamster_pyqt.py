@@ -48,18 +48,18 @@ class FactPyQt(QObject):
     def end(self):
         return QDateTime(self._fact.end)
 
-    @pyqtSlot(result='QString')
+    @pyqtSlot(result=str)
     def description(self):
         return self._fact.description
 
-    @pyqtSlot(result='QString')
+    @pyqtSlot(result=str)
     def category(self):
         if not self._fact.category:
             return ""
         else:
             return self._fact.category.name
 
-    @pyqtSlot(result='QString')
+    @pyqtSlot(result=str)
     def activity(self):
         return self._fact.activity.name
 
@@ -157,7 +157,7 @@ class HamsterPyQt(QObject):
     """ Hamser interface """
 
     currentUpdated    = pyqtSignal(FactPyQt, name='currentUpdated', arguments=['current'])
-    errorMessage      = pyqtSignal('QString', name='errorMessage', arguments=['message'])
+    errorMessage      = pyqtSignal(str, name='errorMessage', arguments=['message'])
     startSuccessful   = pyqtSignal(name='startSuccessful')
     stopSuccessful    = pyqtSignal(name='stopSuccessful')
     factUpdated       = pyqtSignal(FactPyQt, name='factUpdated', arguments=['fact'])
@@ -214,7 +214,7 @@ class HamsterPyQt(QObject):
         categoryDic[cat].addActivity(HqActivity(act))
       return categoryDic
 
-    @pyqtSlot('QString')
+    @pyqtSlot(str)
     def start(self, command):
         """ Start a fact """
         if not command:
@@ -254,7 +254,7 @@ class HamsterPyQt(QObject):
         self.current()
 
 
-    @pyqtSlot(QDateTime, QDateTime, 'QString', 'QString', 'QString')
+    @pyqtSlot(QDateTime, QDateTime, str, str, str)
     def create(self, start, end, activity, category, description):
         """ Create a fact for the given date """
         command = activity
@@ -324,7 +324,7 @@ class HamsterPyQt(QObject):
             string = '{fact} ({duration} minutes)'.format(fact=fact, duration=fact.get_string_delta())
             self.currentUpdated.emit(FactPyQt(fact));
 
-    @pyqtSlot(int, 'QDateTime', 'QDateTime', 'QString', 'QString', 'QString')
+    @pyqtSlot(int, 'QDateTime', 'QDateTime', str, str, str)
     def updateFact(self, key, startTime, endTime, activity, category, description):
         # get the fact from the Fact Manager
         try:
