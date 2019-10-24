@@ -19,8 +19,8 @@
 ############################################################################
 
 import sys
-from PyQt5.QtCore import Qt, pyqtSlot, QAbstractTableModel, QModelIndex, QByteArray, QVariant
-from PyQt5.QtCore import QTime, QDate
+from PySide2.QtCore import Qt, Slot, QAbstractTableModel, QModelIndex, QByteArray, QVariant
+from PySide2.QtCore import QTime, QDate
 
 from hamster_lib import Fact
 
@@ -70,7 +70,7 @@ class FactModelPyQt(QAbstractTableModel):
         self._hamster.factUpdated.connect(self.updateFact)
         self._hamster.factAdded.connect(self.addFact)
 
-    @pyqtSlot()
+    @Slot()
     def refreshFacts(self):
         self.beginResetModel()
         self._facts = self._hamster.list();
@@ -85,7 +85,7 @@ class FactModelPyQt(QAbstractTableModel):
             self._totals[ day ] = self._totals[ day ].addMSecs( factDur.msecsSinceStartOfDay() )
         self.endResetModel()
 
-    @pyqtSlot(FactPyQt)
+    @Slot(FactPyQt)
     def updateFact(self, updatedFact):
         index = len(self._facts)
         for fact in reversed(self._facts):
@@ -108,7 +108,7 @@ class FactModelPyQt(QAbstractTableModel):
                 self.dataChanged.emit(self.index(index, 0), self.index(index, self.columnCount() - 1), )
                 return
 
-    @pyqtSlot(FactPyQt)
+    @Slot(FactPyQt)
     def addFact(self, fact):
         self.beginInsertRows(QModelIndex(), self.rowCount(), self.rowCount() + 1)
         self._facts.append(fact)
@@ -142,7 +142,7 @@ class FactModelPyQt(QAbstractTableModel):
     def roleNames(self):
         return self._roles
 
-    @pyqtSlot(QDate, result='QVariant')
+    @Slot(QDate, result='QVariant')
     def getDayTotal(self, day):
         """ Get the total time for the specified day.
 
@@ -153,7 +153,7 @@ class FactModelPyQt(QAbstractTableModel):
           duration = self._totals[ day ]
         return duration;
 
-    @pyqtSlot(int, result='QVariant')
+    @Slot(int, result='QVariant')
     def get(self, row):
         headers = {}
         tmpFact = self._facts[row]

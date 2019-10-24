@@ -21,7 +21,7 @@ import sys
 import datetime
 from datetime import timedelta
 
-from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot, QDateTime, QDate, QTime
+from PySide2.QtCore import QObject, Signal, Slot, QDateTime, QDate, QTime
 
 import hamster_lib
 from hamster_lib import Fact, HamsterControl, reports, Category, Activity
@@ -40,38 +40,38 @@ class FactPyQt(QObject):
         super(FactPyQt, self).__init__()
         self._fact = fact
 
-    @pyqtSlot(result='QDateTime')
+    @Slot(result='QDateTime')
     def start(self):
         return QDateTime(self._fact.start)
 
-    @pyqtSlot(result='QDateTime')
+    @Slot(result='QDateTime')
     def end(self):
         return QDateTime(self._fact.end)
 
-    @pyqtSlot(result=str)
+    @Slot(result=str)
     def description(self):
         return self._fact.description
 
-    @pyqtSlot(result=str)
+    @Slot(result=str)
     def category(self):
         if not self._fact.category:
             return ""
         else:
             return self._fact.category.name
 
-    @pyqtSlot(result=str)
+    @Slot(result=str)
     def activity(self):
         return self._fact.activity.name
 
-    @pyqtSlot(result='int')
+    @Slot(result='int')
     def key(self):
         return self._fact.pk
 
-    @pyqtSlot(result='QTime')
+    @Slot(result='QTime')
     def duration(self):
         return QTime(0, 0, FACT_START_OFFSET).addSecs(self.start().secsTo(self.end()))
 
-    @pyqtSlot(result='QDate')
+    @Slot(result='QDate')
     def day(self):
         return self.end().date()
 
@@ -85,15 +85,15 @@ class HqActivity(QObject):
         super(HqActivity, self).__init__()
         self._activity = activity
 
-    @pyqtSlot(result=str)
+    @Slot(result=str)
     def name(self):
       return self._activity.name
 
-    @pyqtSlot(result=str)
+    @Slot(result=str)
     def categoryName(self):
       return self._activity.category.name
 
-    @pyqtSlot(result=int)
+    @Slot(result=int)
     def key(self):
       return self._activity.pk
 
@@ -108,23 +108,23 @@ class HqCategory(QObject):
         self._category   = category
         self._activities = set()
 
-    @pyqtSlot(result=str)
+    @Slot(result=str)
     def name(self):
       if self._category is None:
         return "(uncategorised)"
       return self._category.name
 
-    @pyqtSlot(result=int)
+    @Slot(result=int)
     def key(self):
       if self._category is None:
         return -1
       return self._category.pk
 
-    @pyqtSlot(HqActivity, result=int)
+    @Slot(HqActivity, result=int)
     def addActivity(self, activity):
       self._activities.add( activity )
 
-    @pyqtSlot(result=HqActivity)
+    @Slot(result=HqActivity)
     def activities(self):
       return self._activities
 
@@ -156,14 +156,14 @@ class HamsterConfig():
 class HamsterPyQt(QObject):
     """ Hamser interface """
 
-    currentUpdated    = pyqtSignal(FactPyQt, name='currentUpdated', arguments=['current'])
-    errorMessage      = pyqtSignal(str, name='errorMessage', arguments=['message'])
-    startSuccessful   = pyqtSignal(name='startSuccessful')
-    stopSuccessful    = pyqtSignal(name='stopSuccessful')
-    factUpdated       = pyqtSignal(FactPyQt, name='factUpdated', arguments=['fact'])
-    factAdded         = pyqtSignal(FactPyQt, name='factAdded', arguments=['fact'])
-    categoriesChanged = pyqtSignal(name='categoriesChanged')
-    activitiesChanged = pyqtSignal(name='activitiesChanged')
+    currentUpdated    = Signal(FactPyQt, name='currentUpdated', arguments=['current'])
+    errorMessage      = Signal(str, name='errorMessage', arguments=['message'])
+    startSuccessful   = Signal(name='startSuccessful')
+    stopSuccessful    = Signal(name='stopSuccessful')
+    factUpdated       = Signal(FactPyQt, name='factUpdated', arguments=['fact'])
+    factAdded         = Signal(FactPyQt, name='factAdded', arguments=['fact'])
+    categoriesChanged = Signal(name='categoriesChanged')
+    activitiesChanged = Signal(name='activitiesChanged')
 
     def __init__(self):
         super(HamsterPyQt, self).__init__()
@@ -185,7 +185,7 @@ class HamsterPyQt(QObject):
         # one for the same minute.
         return end.replace(second=0, microsecond=0)
 
-    @pyqtSlot()
+    @Slot()
     def list(self, start_time = '', end_time = ''):
         """ List all facts that are between the supplied start and end times. """
         if start_time and end_time:
@@ -201,7 +201,7 @@ class HamsterPyQt(QObject):
                 factsPyQt.append(factPyQt)
             return factsPyQt
 
-    @pyqtSlot()
+    @Slot()
     def categories(self):
       categories  = self._control.categories.get_all()
       categoryDic = {}
@@ -214,7 +214,7 @@ class HamsterPyQt(QObject):
         categoryDic[cat].addActivity(HqActivity(act))
       return categoryDic
 
-    @pyqtSlot(str)
+    @Slot(str)
     def start(self, command):
         """ Start a fact """
         if not command:
@@ -254,7 +254,7 @@ class HamsterPyQt(QObject):
         self.current()
 
 
-    @pyqtSlot(QDateTime, QDateTime, str, str, str)
+    @Slot(QDateTime, QDateTime, str, str, str)
     def create(self, start, end, activity, category, description):
         """ Create a fact for the given date """
         command = activity
@@ -274,7 +274,7 @@ class HamsterPyQt(QObject):
             self.factAdded.emit(FactPyQt(fact))
 
 
-    @pyqtSlot()
+    @Slot()
     def stop(self, endTime = None, ignoreError=False):
         """ Stop an ongoing fact """
         try:
@@ -302,7 +302,7 @@ class HamsterPyQt(QObject):
         self.factAdded.emit(FactPyQt(fact))
         self.current()
 
-    @pyqtSlot()
+    @Slot()
     def cancel(self):
         """ Cancel an ongoing fact """
         try:
@@ -312,7 +312,7 @@ class HamsterPyQt(QObject):
 
         self.current()
 
-    @pyqtSlot()
+    @Slot()
     def current(self):
         """ List the current active fact """
         try:
@@ -324,7 +324,7 @@ class HamsterPyQt(QObject):
             string = '{fact} ({duration} minutes)'.format(fact=fact, duration=fact.get_string_delta())
             self.currentUpdated.emit(FactPyQt(fact));
 
-    @pyqtSlot(int, 'QDateTime', 'QDateTime', str, str, str)
+    @Slot(int, 'QDateTime', 'QDateTime', str, str, str)
     def updateFact(self, key, startTime, endTime, activity, category, description):
         # get the fact from the Fact Manager
         try:
@@ -350,7 +350,7 @@ class HamsterPyQt(QObject):
             self.errorMessage.emit("Could not update fact: {0}".format(err))
             return
 
-    @pyqtSlot(int)
+    @Slot(int)
     def removeCategory(self, pk):
       if int(pk) == -1:
         return
@@ -360,7 +360,7 @@ class HamsterPyQt(QObject):
       self._control.categories.remove( category )
       self.categoriesChanged.emit()
 
-    @pyqtSlot(int)
+    @Slot(int)
     def removeActivity(self, pk):
       activity = self._control.activities.get( pk )
       rawActivity = self._control.activities.get( pk, raw=True )
@@ -369,7 +369,7 @@ class HamsterPyQt(QObject):
       self._control.activities.remove( activity )
       self.activitiesChanged.emit()
 
-    @pyqtSlot(int, result=bool)
+    @Slot(int, result=bool)
     def canRemoveCategory(self, pk):
       if int(pk) == -1:
         return False
@@ -384,12 +384,12 @@ class HamsterPyQt(QObject):
       rawCategory = self._control.categories.get_by_name( category.name, raw=True )
       return len( rawCategory.activities ) == 0
 
-    @pyqtSlot(int, result=bool)
+    @Slot(int, result=bool)
     def canRemoveActivity(self, pk):
       rawActivity = self._control.activities.get( pk, raw=True )
       return len( rawActivity.facts ) == 0
 
-    @pyqtSlot(str, str, result=bool)
+    @Slot(str, str, result=bool)
     def addActivity(self, activityName, categoryName):
       activityName = activityName.strip()
       categoryName = categoryName.strip()

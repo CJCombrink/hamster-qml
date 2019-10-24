@@ -19,8 +19,8 @@
 ############################################################################
 
 import sys
-from PyQt5.QtCore import Qt, pyqtSlot, QModelIndex, QByteArray, QVariant
-from PyQt5.QtGui  import QStandardItemModel, QStandardItem
+from PySide2.QtCore import Qt, Slot, QModelIndex, QByteArray, QVariant
+from PySide2.QtGui  import QStandardItemModel, QStandardItem
 
 from hamster_lib import Fact
 
@@ -63,7 +63,7 @@ class HqCategoriesModel(QStandardItemModel):
         self._hamster.categoriesChanged.connect(self.refreshCategories)
         self._hamster.activitiesChanged.connect(self.refreshCategories)
 
-    @pyqtSlot()
+    @Slot()
     def refreshCategories(self):
         self.beginResetModel()
         self._categories = self._hamster.categories()
@@ -76,7 +76,7 @@ class HqCategoriesModel(QStandardItemModel):
                 item.appendRow( [ QStandardItem( act.name() ), QStandardItem( str(act.key()) ), QStandardItem( "Activity" ) ] )
         self.endResetModel()
 
-    @pyqtSlot(str,result=QVariant)
+    @Slot(str,result=QVariant)
     def activitiesList(self, category):
       """
       Get the list of activities for the given category. The
@@ -105,7 +105,7 @@ class HqCategoriesModel(QStandardItemModel):
         elif role == self._rType: col = 2
         return QStandardItemModel.data(self, index.siblingAtColumn( col ), Qt.DisplayRole)
 
-    @pyqtSlot(QModelIndex)
+    @Slot(QModelIndex)
     def removeItem(self, index):
       type = index.data(self._rType)
       if type == 'Category':
@@ -113,7 +113,7 @@ class HqCategoriesModel(QStandardItemModel):
       if type == "Activity":
         self._hamster.removeActivity(index.data(self._rKey))
 
-    @pyqtSlot(QModelIndex, result=bool)
+    @Slot(QModelIndex, result=bool)
     def canRemove(self, index):
       type = index.data(self._rType)
       if type == 'Category':
@@ -122,7 +122,7 @@ class HqCategoriesModel(QStandardItemModel):
         return self._hamster.canRemoveActivity(index.data(self._rKey))
       return False
 
-    @pyqtSlot(str, str)
+    @Slot(str, str)
     def addActivity(self, activity, category):
       added = self._hamster.addActivity( activity, category )
       if added:

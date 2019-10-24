@@ -20,11 +20,11 @@
 
 import sys
 
-from PyQt5.QtCore    import QObject, QSettings, pyqtProperty, pyqtSignal, pyqtSlot, Qt
-from PyQt5.QtGui     import QGuiApplication, QIcon, QImage
-from PyQt5.QtWidgets import qApp
-from PyQt5.QtQuick   import QQuickView, QQuickImageProvider
-from PyQt5.QtQml     import qmlRegisterType, QQmlApplicationEngine
+from PySide2.QtCore    import QObject, QSettings, pyqtProperty, Signal, Slot, Qt
+from PySide2.QtGui     import QGuiApplication, QIcon, QImage
+from PySide2.QtWidgets import qApp
+from PySide2.QtQuick   import QQuickView, QQuickImageProvider
+from PySide2.QtQml     import qmlRegisterType, QQmlApplicationEngine
 
 from hamster_pyqt      import HamsterPyQt, FactPyQt
 from facts_model       import FactModelPyQt
@@ -69,8 +69,8 @@ class Settings( QObject ):
   This class contains settings used by the Hamster-Qml application.
   TODO: Store settings to QSettings ini file.
   """
-  dynamicCategoriesChanged = pyqtSignal(bool)
-  dynamicActivitiesChanged = pyqtSignal(bool)
+  dynamicCategoriesChanged = Signal(bool)
+  dynamicActivitiesChanged = Signal(bool)
 
   def __init__(self):
       super().__init__()
@@ -110,7 +110,7 @@ class Namespace(QObject):
     """Namespace to add clarity on the QML side, contains all Python objects
     exposed to the QML root context as attributes."""
 
-    hamsterLibChanged = pyqtSignal()
+    hamsterLibChanged = Signal()
 
     def __init__(self):
         super(Namespace, self).__init__()

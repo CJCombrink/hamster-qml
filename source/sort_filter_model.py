@@ -19,14 +19,14 @@
 ############################################################################
 
 import sys
-from PyQt5.QtCore import Qt, QObject, QSortFilterProxyModel, QDate, QModelIndex, QVariant, QAbstractItemModel
-from PyQt5.QtCore import pyqtProperty, pyqtSignal, pyqtSlot
+from PySide2.QtCore import Qt, QObject, QSortFilterProxyModel, QDate, QModelIndex, QVariant, QAbstractItemModel
+from PySide2.QtCore import pyqtProperty, Signal, Slot
 
 class SortFilterModelPyQt(QSortFilterProxyModel):
     """ The Sort and Filter Proxy model"""
 
-    startDateChanged = pyqtSignal(QDate, name='startDateChanged', arguments=['startDate'])
-    endDateChanged   = pyqtSignal(QDate, name='endDateChanged', arguments=['endDate'])
+    startDateChanged = Signal(QDate, name='startDateChanged', arguments=['startDate'])
+    endDateChanged   = Signal(QDate, name='endDateChanged', arguments=['endDate'])
 
     def __init__(self, hamster):
         super(SortFilterModelPyQt, self).__init__()
@@ -69,7 +69,7 @@ class SortFilterModelPyQt(QSortFilterProxyModel):
             self._endDate = endDate
             self.endDateChanged.emit(endDate)
 
-    @pyqtSlot(int, QModelIndex, result=bool)
+    @Slot(int, QModelIndex, result=bool)
     def filterAcceptsRow(self, row, parentIndex):
         index = self.sourceModel.index(row, 0, parentIndex)
         if not index.isValid():
@@ -82,7 +82,7 @@ class SortFilterModelPyQt(QSortFilterProxyModel):
             return True
         return False
 
-    @pyqtSlot()
+    @Slot()
     def _updateDateRoles(self):
         dictionary  = dict(self.roleNames())
         for role, name in dictionary.items():
@@ -95,7 +95,7 @@ class SortFilterModelPyQt(QSortFilterProxyModel):
                   self.sort(0, Qt.AscendingOrder )
 
 
-    @pyqtSlot(int, result='QVariant')
+    @Slot(int, result='QVariant')
     def get(self, row):
         dictionary  = dict(self.roleNames())
         headers = {}
@@ -104,7 +104,7 @@ class SortFilterModelPyQt(QSortFilterProxyModel):
             headers[str(name, "utf-8")] = self.data(index, role)
         return headers
 
-    @pyqtSlot(QModelIndex, QModelIndex, result=bool)
+    @Slot(QModelIndex, QModelIndex, result=bool)
     def lessThan(self, left, right):
         leftStart  = self.sourceModel.data(left, self._startRole)
         rightStart = self.sourceModel.data(right, self._startRole)
