@@ -47,7 +47,7 @@ class ImageProvider(QQuickImageProvider):
     def __init__(self):
         super(ImageProvider, self).__init__(QQuickImageProvider.Image)
 
-    def requestImage(self, imageId, size):
+    def requestImage(self, imageId, size, requestedSize):
         imagePath = '../Resources/Images/'
         imageDict = {
           'list-add'    : 'list-add.svg',
@@ -57,10 +57,12 @@ class ImageProvider(QQuickImageProvider):
 
         imageName = imageDict.get( imageId )
         if imageName is not None:
-          img = QImage( imagePath + imageName).scaled(size, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+          if size:
+            size = requestedSize
+          img = QImage( imagePath + imageName).scaled(requestedSize, Qt.KeepAspectRatio, Qt.SmoothTransformation)
         else:
           img = QImage()
-        return img, img.size()
+        return img
 
 
 class Settings( QObject ):
