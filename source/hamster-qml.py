@@ -27,7 +27,7 @@ from PySide2.QtQuick   import QQuickView, QQuickImageProvider
 from PySide2.QtQml     import qmlRegisterType, QQmlApplicationEngine
 
 from hamster_pyqt      import HamsterPyQt, FactPyQt
-from facts_model       import FactModelPyQt
+from facts_model       import FactsModel
 from sort_filter_model import SortFilterModelPyQt
 from categories_model  import HqCategoriesModel
 
@@ -127,7 +127,7 @@ class Namespace(QObject):
         # Initialise the value of the properties.
         self._name        = 'hamster'
         self._hamster_lib = HamsterPyQt()
-        self._facts       = FactModelPyQt(self._hamster_lib);
+        self._facts       = FactsModel(self._hamster_lib);
         self._categories  = HqCategoriesModel(self._hamster_lib)
         self._settings    = Settings()
 

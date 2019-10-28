@@ -27,7 +27,7 @@ from hamster_lib import Fact
 from hamster_pyqt import HamsterPyQt
 from hamster_pyqt import FactPyQt
 
-class FactModelPyQt(QAbstractTableModel):
+class FactsModel(QAbstractTableModel):
     """ Fact Model """
     COLUMNS = (b'key'        ,
                b'start'      ,
@@ -39,7 +39,7 @@ class FactModelPyQt(QAbstractTableModel):
                b'day'        )
 
     def __init__(self, hamster):
-        super(FactModelPyQt, self).__init__()
+        super(FactsModel, self).__init__()
         self._hamster      = hamster
         self._facts        = []
         self._totals       = {} # Day totals maintained in the model. When the model is refreshed this
@@ -57,14 +57,14 @@ class FactModelPyQt(QAbstractTableModel):
         self._rDay         = roleIndexes; roleIndexes += 1
         # Reset the index to reuse
         roleIndexes      = 0
-        self._roles[self._rKey        ] = QByteArray().append(FactModelPyQt.COLUMNS[roleIndexes]); roleIndexes += 1
-        self._roles[self._rStart      ] = QByteArray().append(FactModelPyQt.COLUMNS[roleIndexes]); roleIndexes += 1
-        self._roles[self._rEnd        ] = QByteArray().append(FactModelPyQt.COLUMNS[roleIndexes]); roleIndexes += 1
-        self._roles[self._rActivity   ] = QByteArray().append(FactModelPyQt.COLUMNS[roleIndexes]); roleIndexes += 1
-        self._roles[self._rCategory   ] = QByteArray().append(FactModelPyQt.COLUMNS[roleIndexes]); roleIndexes += 1
-        self._roles[self._rDescription] = QByteArray().append(FactModelPyQt.COLUMNS[roleIndexes]); roleIndexes += 1
-        self._roles[self._rDuration   ] = QByteArray().append(FactModelPyQt.COLUMNS[roleIndexes]); roleIndexes += 1
-        self._roles[self._rDay        ] = QByteArray().append(FactModelPyQt.COLUMNS[roleIndexes]); roleIndexes += 1
+        self._roles[self._rKey        ] = QByteArray().append(FactsModel.COLUMNS[roleIndexes]); roleIndexes += 1
+        self._roles[self._rStart      ] = QByteArray().append(FactsModel.COLUMNS[roleIndexes]); roleIndexes += 1
+        self._roles[self._rEnd        ] = QByteArray().append(FactsModel.COLUMNS[roleIndexes]); roleIndexes += 1
+        self._roles[self._rActivity   ] = QByteArray().append(FactsModel.COLUMNS[roleIndexes]); roleIndexes += 1
+        self._roles[self._rCategory   ] = QByteArray().append(FactsModel.COLUMNS[roleIndexes]); roleIndexes += 1
+        self._roles[self._rDescription] = QByteArray().append(FactsModel.COLUMNS[roleIndexes]); roleIndexes += 1
+        self._roles[self._rDuration   ] = QByteArray().append(FactsModel.COLUMNS[roleIndexes]); roleIndexes += 1
+        self._roles[self._rDay        ] = QByteArray().append(FactsModel.COLUMNS[roleIndexes]); roleIndexes += 1
 
         self.refreshFacts()
         self._hamster.factUpdated.connect(self.updateFact)
@@ -124,7 +124,7 @@ class FactModelPyQt(QAbstractTableModel):
         return len(self._facts)
 
     def columnCount(self, parent=QModelIndex()):
-        return len(FactModelPyQt.COLUMNS)
+        return len(FactsModel.COLUMNS)
 
     def data(self, index, role):
         if not index.isValid():
