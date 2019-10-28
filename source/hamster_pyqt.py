@@ -264,8 +264,8 @@ class HamsterPyQt(QObject):
             command = command + ',' + description
         fact = Fact.create_from_raw_fact(command)
 
-        fact.start = self._cleanStart(start.toPyDateTime())
-        fact.end   = self._cleanEnd(end.toPyDateTime())
+        fact.start = self._cleanStart(start.toPython())
+        fact.end   = self._cleanEnd(end.toPython())
         try:
            fact = self._control.facts.save(fact)
         except ValueError as err:
@@ -338,8 +338,8 @@ class HamsterPyQt(QObject):
         cat = None
         if category:
             cat = Category(category)
-        fact.start       = self._cleanStart(startTime.toPyDateTime())
-        fact.end         = self._cleanEnd(endTime.toPyDateTime())
+        fact.start       = self._cleanStart(startTime.toPython())
+        fact.end         = self._cleanEnd(endTime.toPython())
         fact.activity    = Activity(activity, category=cat)
         fact.description = description
         # Save the updated fact
