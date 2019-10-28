@@ -28,8 +28,9 @@ The following steps can be used to run the GUI:
 1. Install the hamster-lib inside Python.
     * `pip install hamster-lib`
     * Version 0.12 was latest and used for the development.
-1. Install PyQt 5.
-    * `pip install PyQt5`
+1. Install PySide2.
+    * `pip install PySide2`
+    * Version 5.13.1 was latest at the time of writing this guide.
 1. Get the hamster-QML sources
     * Download or check out the sources from this project page.
 1. Run the application.
