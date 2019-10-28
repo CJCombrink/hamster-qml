@@ -76,7 +76,7 @@ class HqCategoriesModel(QStandardItemModel):
                 item.appendRow( [ QStandardItem( act.name() ), QStandardItem( str(act.key()) ), QStandardItem( "Activity" ) ] )
         self.endResetModel()
 
-    @Slot(str,result=list)
+    @Slot(str,result='QVariant')
     def activitiesList(self, category):
       """
       Get the list of activities for the given category. The

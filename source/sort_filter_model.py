@@ -95,7 +95,7 @@ class SortFilterModelPyQt(QSortFilterProxyModel):
                   self.sort(0, Qt.AscendingOrder )
 
 
-    @Slot(int, result=dict)
+    @Slot(int, result='QVariant')
     def get(self, row):
         dictionary  = dict(self.roleNames())
         headers = {}

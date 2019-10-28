@@ -153,7 +153,7 @@ class FactModelPyQt(QAbstractTableModel):
           duration = self._totals[ day ]
         return duration;
 
-    @Slot(int, result=dict)
+    @Slot(int, result='QVariant')
     def get(self, row):
         headers = {}
         tmpFact = self._facts[row]
