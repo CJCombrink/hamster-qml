@@ -25,11 +25,7 @@ ComboBox {
    * the need to change the contentItem since the TextField
    * does not have a boder color. */
   Rectangle {
-    id: placeholder
-    x: text_.left
-    y: text_.top
-    width: text_.width
-    height: text_.height
+    anchors.fill: parent
     parent: root_.contentItem
     color: 'transparent'
     border.color: (!text_.acceptableInput && showAcceptable)? '#80ff0000': 'transparent'
