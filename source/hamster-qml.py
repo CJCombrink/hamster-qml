@@ -26,9 +26,9 @@ from PySide2.QtWidgets import qApp
 from PySide2.QtQuick   import QQuickView, QQuickImageProvider
 from PySide2.QtQml     import qmlRegisterType, QQmlApplicationEngine
 
-from hamster_pyqt      import HamsterPyQt, FactPyQt
+from hamster_qt        import HamsterQt, FactQt
 from facts_model       import FactsModel
-from sort_filter_model import SortFilterModelPyQt
+from sort_filter_model import SortFilterModel
 from categories_model  import HqCategoriesModel
 
 cVERSION = u'0.4'
@@ -126,7 +126,7 @@ class Namespace(QObject):
         super(Namespace, self).__init__()
         # Initialise the value of the properties.
         self._name        = 'hamster'
-        self._hamster_lib = HamsterPyQt()
+        self._hamster_lib = HamsterQt()
         self._facts       = FactsModel(self._hamster_lib);
         self._categories  = HqCategoriesModel(self._hamster_lib)
         self._settings    = Settings()
@@ -166,9 +166,9 @@ if __name__ == '__main__':
     # Setting the defaultf format for QSettins to be INI files.
     # I don't like stuff writing to the Registry on Windows...
     QSettings.setDefaultFormat( QSettings.IniFormat )
-    # Register the Python type. Its URI is 'SortFilterModelPyQt', it's v1.0 and the type
-    # will be called 'SortFilterModelPyQt' in QML.
-    qmlRegisterType(SortFilterModelPyQt, 'SortFilterModelPyQt', 1, 0, 'SortFilterModelPyQt')
+    # Register the Python type. Its URI is 'SortFilterModel', it's v1.0 and the type
+    # will be called 'SortFilterModel' in QML.
+    qmlRegisterType(SortFilterModel, 'SortFilterModel', 1, 0, 'SortFilterModel')
     # Create the QML Engine
     engine = QQmlApplicationEngine()
     engine.addImageProvider("images", ImageProvider())
@@ -179,5 +179,3 @@ if __name__ == '__main__':
     context.setContextProperty('py', py)
     engine.load('qml/main.qml')
     sys.exit(myApp.exec_())
-
-    #http://stackoverflow.com/questions/33374257/pyqt-5-5-qml-combobox

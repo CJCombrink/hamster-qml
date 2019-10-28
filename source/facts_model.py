@@ -24,8 +24,8 @@ from PySide2.QtCore import QTime, QDate
 
 from hamster_lib import Fact
 
-from hamster_pyqt import HamsterPyQt
-from hamster_pyqt import FactPyQt
+from hamster_qt import HamsterQt
+from hamster_qt import FactQt
 
 class FactsModel(QAbstractTableModel):
     """ Fact Model """
@@ -85,7 +85,7 @@ class FactsModel(QAbstractTableModel):
             self._totals[ day ] = self._totals[ day ].addMSecs( factDur.msecsSinceStartOfDay() )
         self.endResetModel()
 
-    @Slot(FactPyQt)
+    @Slot(FactQt)
     def updateFact(self, updatedFact):
         index = len(self._facts)
         for fact in reversed(self._facts):
@@ -108,7 +108,7 @@ class FactsModel(QAbstractTableModel):
                 self.dataChanged.emit(self.index(index, 0), self.index(index, self.columnCount() - 1), )
                 return
 
-    @Slot(FactPyQt)
+    @Slot(FactQt)
     def addFact(self, fact):
         self.beginInsertRows(QModelIndex(), self.rowCount(), self.rowCount() + 1)
         self._facts.append(fact)

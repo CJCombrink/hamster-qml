@@ -22,14 +22,14 @@ import sys
 from PySide2.QtCore import Qt, QObject, QSortFilterProxyModel, QDate, QModelIndex, QAbstractItemModel
 from PySide2.QtCore import Property, Signal, Slot
 
-class SortFilterModelPyQt(QSortFilterProxyModel):
+class SortFilterModel(QSortFilterProxyModel):
     """ The Sort and Filter Proxy model"""
 
     startDateChanged = Signal(QDate, name='startDateChanged', arguments=['startDate'])
     endDateChanged   = Signal(QDate, name='endDateChanged', arguments=['endDate'])
 
     def __init__(self):
-        super(SortFilterModelPyQt, self).__init__()
+        super(SortFilterModel, self).__init__()
         self._startDate = QDate()
         self._endDate   = QDate()
         self._dayRole   = 0
@@ -43,11 +43,11 @@ class SortFilterModelPyQt(QSortFilterProxyModel):
 
     @Property(QAbstractItemModel)
     def sourceModel(self):
-        return super(SortFilterModelPyQt, self).sourceModel()
+        return super(SortFilterModel, self).sourceModel()
 
     @sourceModel.setter
     def set_sourceModel(self, model):
-        super(SortFilterModelPyQt, self).setSourceModel(model)
+        super(SortFilterModel, self).setSourceModel(model)
 
     @Property(QDate, notify=startDateChanged)
     def startDate(self):

@@ -34,10 +34,10 @@ from hamster_lib.helpers import time as time_helpers
 # not like this. This should ensure that this does not happen.
 FACT_START_OFFSET = 10 # seconds
 
-class FactPyQt(QObject):
+class FactQt(QObject):
     """ QObject wrapper for a fact """
     def __init__(self, fact):
-        super(FactPyQt, self).__init__()
+        super(FactQt, self).__init__()
         self._fact = fact
 
     @Slot(result='QDateTime')
@@ -139,8 +139,8 @@ class HamsterConfig():
             'daystart'       : '00:00:00',
             'fact_min_delta' : '60',
             'db_engine'      : 'sqlite',
-            'db_path'        : 'hamster_pyqt.sqlite',
-            'tmpfile_path'   : 'hamster_pyqt.fact'
+            'db_path'        : 'hamster_qt.sqlite',
+            'tmpfile_path'   : 'hamster_qt.fact'
         }
 
     def get(self, key, default = ''):
@@ -153,20 +153,20 @@ class HamsterConfig():
         return self.get(key)
 
 
-class HamsterPyQt(QObject):
+class HamsterQt(QObject):
     """ Hamser interface """
 
-    currentUpdated    = Signal(FactPyQt, name='currentUpdated', arguments=['current'])
+    currentUpdated    = Signal(FactQt, name='currentUpdated', arguments=['current'])
     errorMessage      = Signal(str, name='errorMessage', arguments=['message'])
     startSuccessful   = Signal(name='startSuccessful')
     stopSuccessful    = Signal(name='stopSuccessful')
-    factUpdated       = Signal(FactPyQt, name='factUpdated', arguments=['fact'])
-    factAdded         = Signal(FactPyQt, name='factAdded', arguments=['fact'])
+    factUpdated       = Signal(FactQt, name='factUpdated', arguments=['fact'])
+    factAdded         = Signal(FactQt, name='factAdded', arguments=['fact'])
     categoriesChanged = Signal(name='categoriesChanged')
     activitiesChanged = Signal(name='activitiesChanged')
 
     def __init__(self):
-        super(HamsterPyQt, self).__init__()
+        super(HamsterQt, self).__init__()
         self._config     = HamsterConfig()
         self._control    = HamsterControl(self._config);
         self.categories()
@@ -193,13 +193,13 @@ class HamsterPyQt(QObject):
         elif start_time:
             print('Listing: %s' % (start_time) )
         else:
-            factsPyQt = []
+            factsQt = []
             facts = self._control.facts.get_all()
             for fact in facts:
-                # Convert the hamster-lib fact to a PyQt fact
-                factPyQt = FactPyQt(fact)
-                factsPyQt.append(factPyQt)
-            return factsPyQt
+                # Convert the hamster-lib fact to a FactQt fact
+                factQt = FactQt(fact)
+                factsQt.append(factQt)
+            return factsQt
 
     @Slot()
     def categories(self):
@@ -250,7 +250,7 @@ class HamsterPyQt(QObject):
             # start and end time was specified and the fact was added to the
             # database. If it does not have a end it is an ongoing fact.
             if fact.end:
-                self.factAdded.emit(FactPyQt(fact))
+                self.factAdded.emit(FactQt(fact))
         self.current()
 
 
@@ -271,7 +271,7 @@ class HamsterPyQt(QObject):
         except ValueError as err:
             self.errorMessage.emit("Fact error: {0}".format(err))
         else:
-            self.factAdded.emit(FactPyQt(fact))
+            self.factAdded.emit(FactQt(fact))
 
 
     @Slot()
@@ -299,7 +299,7 @@ class HamsterPyQt(QObject):
             return
         # At this point adding the fact should have been successful.
         self.stopSuccessful.emit()
-        self.factAdded.emit(FactPyQt(fact))
+        self.factAdded.emit(FactQt(fact))
         self.current()
 
     @Slot()
@@ -322,7 +322,7 @@ class HamsterPyQt(QObject):
         else:
             fact.end = datetime.datetime.now()
             string = '{fact} ({duration} minutes)'.format(fact=fact, duration=fact.get_string_delta())
-            self.currentUpdated.emit(FactPyQt(fact));
+            self.currentUpdated.emit(FactQt(fact));
 
     @Slot(int, 'QDateTime', 'QDateTime', str, str, str)
     def updateFact(self, key, startTime, endTime, activity, category, description):
@@ -345,7 +345,7 @@ class HamsterPyQt(QObject):
         # Save the updated fact
         try:
             self._control.facts.save(fact)
-            self.factUpdated.emit(FactPyQt(fact))
+            self.factUpdated.emit(FactQt(fact))
         except ValueError as err:
             self.errorMessage.emit("Could not update fact: {0}".format(err))
             return

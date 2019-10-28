@@ -24,8 +24,8 @@ from PySide2.QtGui  import QStandardItemModel, QStandardItem
 
 from hamster_lib import Fact
 
-from hamster_pyqt import HamsterPyQt
-from hamster_pyqt import FactPyQt
+from hamster_qt import HamsterQt
+from hamster_qt import FactQt
 
 class HqCategoriesModel(QStandardItemModel):
     """

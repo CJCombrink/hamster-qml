@@ -23,7 +23,7 @@ import QtQuick.Controls 2.1
 import QtQuick.Layouts 1.3
 import QtQuick.Window 2.2
 import QtQuick.Controls.Styles 1.1
-import SortFilterModelPyQt 1.0
+import SortFilterModel 1.0
 
 Item {
   id: pageOverview
@@ -123,7 +123,7 @@ Item {
       Layout.fillWidth: true
       Layout.fillHeight: true
 
-      SortFilterModelPyQt {
+      SortFilterModel {
         id: sortFilterModel
         startDate  : new Date()
         endDate    : new Date()
