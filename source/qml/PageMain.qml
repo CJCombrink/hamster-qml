@@ -214,7 +214,6 @@ Item {
       errorPopup.open()
     }
     onStartSuccessful: {
-      textFieldNew.text = ""
       controlFactNew_.clear()
     }
     onStopSuccessful: {
