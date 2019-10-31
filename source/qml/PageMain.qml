@@ -94,6 +94,7 @@ Item {
           function clear() {
             textTime_.text = ""
             factEditor_.clear()
+            textTime_.focus = true;
           }
 
           TextField {
@@ -135,11 +136,11 @@ Item {
             id: factEditor_
             Layout.fillWidth: true
             onClearRequested: controlFactNew_.clear()
-            onAccepted: _buttonStart2.clicked()
+            onAccepted: _buttonStart.clicked()
           }
 
           Button {
-            id: _buttonStart2
+            id: _buttonStart
             text: "Start"
             enabled: textTime_.acceptableInput
                      && factEditor_.valid

@@ -31,7 +31,7 @@ from facts_model       import FactsModel
 from sort_filter_model import SortFilterModel
 from categories_model  import HqCategoriesModel
 
-cVERSION = u'0.4'
+cVERSION = u'0.5'
 # Set the windows ICON (need to figure out what happens on Linux)
 import ctypes
 myappid = u'cjc.hamster-qml.' + cVERSION
