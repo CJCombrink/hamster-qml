@@ -180,6 +180,17 @@ Item {
     flags        : Qt.Dialog
     modality     : Qt.WindowModal
 
+    onVisibleChanged: {
+      if( windowCategoryAdd_.visible === true ) {
+        /* When the widget gets shown, clear the edit fields
+         * and force the category combo to get focus. */
+        comboCategory_.currentIndex = -1
+        comboCategory_.editText = ""
+        textActivity_.text = ""
+        comboCategory_.forceActiveFocus()
+      }
+    }
+
     ColumnLayout {
       id: layout_
       anchors.fill   : parent
@@ -202,17 +213,6 @@ Item {
           ColumnLayout {
             Layout.fillWidth: true
             Label  {
-              text: "Activity"
-            }
-            TextField {
-              id: textActivity_
-              Layout.fillWidth: true
-              selectByMouse: true
-            }
-          }
-          ColumnLayout {
-            Layout.fillWidth: true
-            Label  {
               text: "Category"
             }
             ComboBox {
@@ -222,6 +222,17 @@ Item {
               currentIndex: -1
               textRole: "name"
               model: py.category_model
+            }
+          }
+          ColumnLayout {
+            Layout.fillWidth: true
+            Label  {
+              text: "Activity"
+            }
+            TextField {
+              id: textActivity_
+              Layout.fillWidth: true
+              selectByMouse: true
             }
           }
         }
@@ -235,7 +246,7 @@ Item {
             text: "Ok"
             enabled: true
             onClicked: {
-              py.category_model.addActivity(textActivity_.text, comboCategory_.editText )
+              py.category_model.addActivity( textActivity_.text, comboCategory_.editText )
               windowCategoryAdd_.close();
             }
           }
