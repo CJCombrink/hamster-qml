@@ -77,16 +77,8 @@ class Settings( QObject ):
   def __init__(self):
       super().__init__()
       settings = QSettings()
-      self._dynamicCategories = self.toBool( settings.value( "DynamicCategories", True ) )
-      self._dynamicActivities = self.toBool( settings.value( "DynamicActivities", True ) )
-
-  def toBool(self, value):
-    """ Workaround for issue with QSettings and bool returning a string and
-        not casting it to a bool correctly. """
-    if isinstance(value, (int)):
-      return bool(value)
-    else:
-      return True if value == "true" else False
+      self._dynamicCategories = settings.value( "DynamicCategories", True, type=bool )
+      self._dynamicActivities = settings.value( "DynamicActivities", True, type=bool )
 
   @Property(bool, notify=dynamicCategoriesChanged)
   def dynamicCategories(self):
